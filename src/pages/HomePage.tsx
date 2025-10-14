@@ -263,10 +263,7 @@ export default function HomePage() {
                 sx={{ marginBottom: 2 }}
                 key={product.id}
               >
-                <Card
-                  onClick={() => handleProductClick(product.id)}
-                  sx={{ cursor: "pointer", height: "100%", borderRadius: 0 }}
-                >
+                <Card sx={{ height: "100%", borderRadius: 0 }}>
                   <Box
                     component="img"
                     src={
