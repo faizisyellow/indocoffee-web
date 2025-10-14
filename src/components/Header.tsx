@@ -12,7 +12,7 @@ import {
   Avatar,
   Divider,
 } from "@mui/material";
-import { ShoppingCart, Coffee, LogOut, ShoppingBag } from "lucide-react";
+import { ShoppingCart, Coffee, LogOut, User } from "lucide-react";
 import CartDrawer from "./CartDrawer";
 import { useNavigate } from "react-router";
 
@@ -46,8 +46,9 @@ export default function Header() {
     setProfileMenuAnchor(null);
   };
 
-  const handleMyOrders = () => {
+  const handleGoToMyAccount = () => {
     console.log("Navigate to my orders");
+    navigate("/account");
     handleProfileMenuClose();
   };
 
@@ -188,9 +189,9 @@ export default function Header() {
                     <Divider sx={{ my: 1 }} />
 
                     {/* Menu Items */}
-                    <MenuItem onClick={handleMyOrders}>
-                      <ShoppingBag size={18} style={{ marginRight: 12 }} />
-                      <Typography variant="body2">My Orders</Typography>
+                    <MenuItem onClick={handleGoToMyAccount}>
+                      <User size={18} style={{ marginRight: 12 }} />
+                      <Typography variant="body2">My Account</Typography>
                     </MenuItem>
 
                     <MenuItem onClick={handleLogout}>
