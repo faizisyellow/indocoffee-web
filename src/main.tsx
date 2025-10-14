@@ -4,7 +4,6 @@ import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { router } from "./routes";
 import { theme } from "./theme";
-import "./index.css";
 import { RouterProvider } from "react-router/dom";
 
 createRoot(document.getElementById("root")!).render(

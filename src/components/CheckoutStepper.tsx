@@ -4,7 +4,7 @@ interface CheckoutStepperProps {
   activeStep: number;
 }
 
-const steps = ["Shopping Cart", "Delivery Address", "Completed"];
+const steps = ["Shopping Cart", "Delivery Address", "Review Order"];
 
 export default function CheckoutStepper({ activeStep }: CheckoutStepperProps) {
   return (
@@ -40,10 +40,10 @@ export default function CheckoutStepper({ activeStep }: CheckoutStepperProps) {
                 height: 40,
                 borderRadius: "50%",
                 border: "2px solid",
-                borderColor: index <= activeStep ? "#1976d2" : "#ccc",
+                borderColor: index <= activeStep ? "#0b341b" : "#ccc",
                 bgcolor:
                   index < activeStep
-                    ? "#1976d2"
+                    ? "#0b341b"
                     : index === activeStep
                       ? "#fff"
                       : "#fff",
@@ -59,7 +59,7 @@ export default function CheckoutStepper({ activeStep }: CheckoutStepperProps) {
                   width: 16,
                   height: 16,
                   borderRadius: "50%",
-                  bgcolor: index <= activeStep ? "#1976d2" : "transparent",
+                  bgcolor: index <= activeStep ? "#0b341b" : "transparent",
                 }}
               />
             </Box>
@@ -82,7 +82,7 @@ export default function CheckoutStepper({ activeStep }: CheckoutStepperProps) {
               sx={{
                 flex: 1,
                 height: 2,
-                bgcolor: index < activeStep ? "#1976d2" : "#ccc",
+                bgcolor: index < activeStep ? "#0b341b" : "#ccc",
                 mx: 2,
                 transition: "background-color 0.3s",
               }}

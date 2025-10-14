@@ -144,16 +144,6 @@ export default function CheckoutPage() {
                 variant="contained"
                 size="large"
                 onClick={handleProceedToAddress}
-                sx={{
-                  bgcolor: "#2e7d32",
-                  px: 6,
-                  py: 1.5,
-                  fontSize: "1rem",
-                  fontWeight: 700,
-                  "&:hover": {
-                    bgcolor: "#1b5e20",
-                  },
-                }}
               >
                 SET ADDRESS
               </Button>
@@ -301,22 +291,8 @@ export default function CheckoutPage() {
                 mt: 4,
               }}
             >
-              <Button
-                type="submit"
-                variant="contained"
-                size="large"
-                sx={{
-                  bgcolor: "#2e7d32",
-                  px: 8,
-                  py: 1.5,
-                  fontSize: "1rem",
-                  fontWeight: 700,
-                  "&:hover": {
-                    bgcolor: "#1b5e20",
-                  },
-                }}
-              >
-                Order
+              <Button type="submit" variant="contained" size="large">
+                Review Order
               </Button>
             </Box>
           </form>

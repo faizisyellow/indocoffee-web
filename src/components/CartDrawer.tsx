@@ -160,15 +160,6 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
             variant="contained"
             size="large"
             onClick={handleCheckout}
-            sx={{
-              bgcolor: "#2e7d32",
-              color: "#fff",
-              py: 1.5,
-              fontWeight: 700,
-              "&:hover": {
-                bgcolor: "#1b5e20",
-              },
-            }}
           >
             CHECKOUT
           </Button>

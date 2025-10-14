@@ -133,12 +133,8 @@ export default function RegisterPage() {
             variant="contained"
             size="large"
             sx={{
-              bgcolor: "#000",
               py: 1.5,
               mb: 2,
-              "&:hover": {
-                bgcolor: "#333",
-              },
             }}
           >
             REGISTER

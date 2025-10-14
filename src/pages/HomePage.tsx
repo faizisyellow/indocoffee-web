@@ -57,73 +57,12 @@ export default function HomePage() {
     navigate(`/product/${productId}`);
   };
 
-  const handleAddToCart = (productId: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    console.log("Add to cart:", productId);
-  };
-
-  const handleLogin = () => {
-    console.log("Navigate to login");
-    navigate("/login");
-  };
-
-  const handleRegister = () => {
-    console.log("Navigate to register");
-    navigate("/register");
-  };
-
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "flex-end",
-          gap: 2,
-          mb: 4,
-        }}
-      >
-        <Button
-          variant="outlined"
-          onClick={handleLogin}
-          sx={{
-            color: "#000",
-            borderColor: "#000",
-            "&:hover": {
-              borderColor: "#000",
-              bgcolor: "rgba(0, 0, 0, 0.04)",
-            },
-          }}
-        >
-          LOGIN
-        </Button>
-        <Button
-          variant="contained"
-          onClick={handleRegister}
-          sx={{
-            bgcolor: "#000",
-            "&:hover": {
-              bgcolor: "#333",
-            },
-          }}
-        >
-          REGISTER
-        </Button>
-      </Box>
-
       <Grid container spacing={3}>
         {mockProducts.map((product) => (
           <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={product.id}>
-            <Card
-              sx={{
-                cursor: "pointer",
-                transition: "transform 0.2s, box-shadow 0.2s",
-                "&:hover": {
-                  transform: "translateY(-4px)",
-                  boxShadow: 4,
-                },
-              }}
-              onClick={() => handleProductClick(product.id)}
-            >
+            <Card onClick={() => handleProductClick(product.id)}>
               <Box
                 sx={{
                   width: "100%",
@@ -176,15 +115,9 @@ export default function HomePage() {
                 <Button
                   fullWidth
                   variant="contained"
-                  onClick={(e) => handleAddToCart(product.id, e)}
-                  sx={{
-                    bgcolor: "#2e7d32",
-                    "&:hover": {
-                      bgcolor: "#1b5e20",
-                    },
-                  }}
+                  onClick={() => handleProductClick(product.id)}
                 >
-                  ADD TO CART
+                  View Detail
                 </Button>
               </CardActions>
             </Card>

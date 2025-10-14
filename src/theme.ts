@@ -1,9 +1,11 @@
+import { darken } from "@mui/material/styles";
+import { lighten } from "@mui/material/styles";
 import { createTheme } from "@mui/material/styles";
 
 export const theme = createTheme({
   palette: {
     primary: {
-      main: "#1976d2",
+      main: "#0b341b",
       light: "#42a5f5",
       dark: "#1565c0",
     },
@@ -25,7 +27,7 @@ export const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Geist Mono", monospace',
     h1: {
       fontSize: "2.5rem",
       fontWeight: 700,
@@ -50,13 +52,56 @@ export const theme = createTheme({
   },
   components: {
     MuiButton: {
+      defaultProps: {
+        disableElevation: true,
+        variant: "contained", // ✅ keep MUI default behavior
+      },
       styleOverrides: {
         root: {
           textTransform: "none",
           fontWeight: 600,
-          borderRadius: 4,
+          borderRadius: 0,
+          boxShadow: "none",
+          transition: "all 0.2s ease-in-out",
         },
       },
+      variants: [
+        {
+          props: { variant: "contained" },
+          style: {
+            backgroundColor: "#0b341b",
+            color: "#fff",
+            border: "2px solid #0b341b",
+            "&:hover": {
+              backgroundColor: lighten("#0b341b", 0.1),
+              borderColor: "#0b341b",
+            },
+            "&:disabled": {
+              backgroundColor: "#ccc",
+              color: "#666",
+              borderColor: "#ccc",
+            },
+          },
+        },
+        {
+          props: { variant: "outlined" },
+          style: {
+            backgroundColor: "#fff",
+            border: "2px solid #0b341b",
+            color: "#0b341b",
+            "&:hover": {
+              backgroundColor: darken("#0b341b", 0.05),
+              color: "#fff",
+              borderColor: "#0b341b",
+            },
+            "&:disabled": {
+              backgroundColor: "#f0f0f0",
+              color: "#999",
+              borderColor: "#ccc",
+            },
+          },
+        },
+      ],
     },
   },
 });

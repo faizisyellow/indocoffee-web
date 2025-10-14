@@ -250,10 +250,12 @@ export default function OrderDetailPage() {
                 onClick={handleCancel}
                 sx={{
                   bgcolor: "#fbc02d",
+                  borderColor: "#fbc02d",
                   color: "#000",
                   py: 1.5,
                   fontWeight: 700,
                   "&:hover": {
+                    borderColor: "#fbc02d",
                     bgcolor: "#f9a825",
                   },
                 }}

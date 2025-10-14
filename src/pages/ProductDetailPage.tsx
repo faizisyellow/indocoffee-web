@@ -172,13 +172,9 @@ export default function ProductDetailPage() {
             size="large"
             onClick={handleAddToCart}
             sx={{
-              bgcolor: "#2e7d32",
               py: 1.5,
               fontSize: "1rem",
               fontWeight: 700,
-              "&:hover": {
-                bgcolor: "#1b5e20",
-              },
             }}
           >
             ADD TO CART

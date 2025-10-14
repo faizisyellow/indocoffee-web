@@ -6,6 +6,7 @@ import {
   IconButton,
   Badge,
   Box,
+  Button,
 } from "@mui/material";
 import { ShoppingCart, Coffee } from "lucide-react";
 import CartDrawer from "./CartDrawer";
@@ -16,20 +17,11 @@ export default function Header() {
   const [cartOpen, setCartOpen] = useState(false);
   const cartItemCount = 2;
 
-  const handleLogoClick = () => {
-    console.log("Navigate to home");
-    navigate("/");
-  };
-
-  const handleCartClick = () => {
-    console.log("Open cart drawer");
-    setCartOpen(true);
-  };
-
-  const handleCartClose = () => {
-    console.log("Close cart drawer");
-    setCartOpen(false);
-  };
+  const handleLogoClick = () => navigate("/");
+  const handleCartClick = () => setCartOpen(true);
+  const handleCartClose = () => setCartOpen(false);
+  const handleLogin = () => navigate("/login");
+  const handleRegister = () => navigate("/register");
 
   return (
     <>
@@ -37,11 +29,16 @@ export default function Header() {
         position="sticky"
         elevation={0}
         sx={{
-          bgcolor: "#e0e0e0",
+          bgcolor: "#ffffff",
           borderBottom: "1px solid #ccc",
         }}
       >
-        <Toolbar sx={{ justifyContent: "space-between", py: 1 }}>
+        <Toolbar
+          sx={{
+            justifyContent: "space-between",
+            py: 1,
+          }}
+        >
           <Box
             sx={{
               display: "flex",
@@ -64,19 +61,36 @@ export default function Header() {
             </Typography>
           </Box>
 
-          <IconButton
-            onClick={handleCartClick}
+          <Box
             sx={{
-              bgcolor: "#fff",
-              "&:hover": { bgcolor: "#f5f5f5" },
-              width: 48,
-              height: 48,
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
             }}
           >
-            <Badge badgeContent={cartItemCount} color="primary">
-              <ShoppingCart size={24} color="#000" />
-            </Badge>
-          </IconButton>
+            <Box sx={{ display: "flex", gap: 2 }}>
+              <Button variant="outlined" onClick={handleLogin}>
+                LOGIN
+              </Button>
+              <Button variant="contained" onClick={handleRegister}>
+                REGISTER
+              </Button>
+            </Box>
+
+            <IconButton
+              onClick={handleCartClick}
+              sx={{
+                bgcolor: "#fff",
+                "&:hover": { bgcolor: "#f5f5f5" },
+                width: 48,
+                height: 48,
+              }}
+            >
+              <Badge badgeContent={cartItemCount} color="primary">
+                <ShoppingCart size={24} color="#000" />
+              </Badge>
+            </IconButton>
+          </Box>
         </Toolbar>
       </AppBar>
 
