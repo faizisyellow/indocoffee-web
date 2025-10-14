@@ -62,6 +62,50 @@ const mockProducts = [
     form: "WHOLE BEAN",
     bean: "ROBUSTA",
   },
+  {
+    id: 5,
+    name: "EXCELSA",
+    price: 160,
+    image: "/coffee-excelsa.jpg",
+    type: "WHOLE COFFEE BEANS",
+    size: "200G",
+    roast: "LIGHT",
+    form: "WHOLE BEAN",
+    bean: "ROBUSTA",
+  },
+  {
+    id: 6,
+    name: "EXCELSA",
+    price: 160,
+    image: "/coffee-excelsa.jpg",
+    type: "WHOLE COFFEE BEANS",
+    size: "200G",
+    roast: "LIGHT",
+    form: "WHOLE BEAN",
+    bean: "ROBUSTA",
+  },
+  {
+    id: 7,
+    name: "EXCELSA",
+    price: 160,
+    image: "/coffee-excelsa.jpg",
+    type: "WHOLE COFFEE BEANS",
+    size: "200G",
+    roast: "LIGHT",
+    form: "WHOLE BEAN",
+    bean: "ROBUSTA",
+  },
+  {
+    id: 8,
+    name: "EXCELSA",
+    price: 160,
+    image: "/coffee-excelsa.jpg",
+    type: "WHOLE COFFEE BEANS",
+    size: "200G",
+    roast: "LIGHT",
+    form: "WHOLE BEAN",
+    bean: "ROBUSTA",
+  },
 ];
 
 export default function HomePage() {
@@ -149,8 +193,6 @@ export default function HomePage() {
               gap: 2,
               background: "linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)",
               p: 2.5,
-              borderRadius: 1,
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
             }}
           >
             {/* Form Filter */}
@@ -216,12 +258,21 @@ export default function HomePage() {
         <Grid size={{ xs: 12, md: 9.5 }}>
           <Grid container spacing={3}>
             {mockProducts.map((product) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={product.id}>
+              <Grid
+                size={{ xs: 12, sm: 6, md: 4, lg: 4 }}
+                sx={{ marginBottom: 2 }}
+                key={product.id}
+              >
                 <Card
                   onClick={() => handleProductClick(product.id)}
-                  sx={{ cursor: "pointer", height: "100%" }}
+                  sx={{ cursor: "pointer", height: "100%", borderRadius: 0 }}
                 >
                   <Box
+                    component="img"
+                    src={
+                      "https://xqe3120hr5.ufs.sh/f/H9qtOxZed3fhDOhPjcn7VTApPwYdvjUimq06kQcZJ1rsEI8x"
+                    }
+                    alt={"product"}
                     sx={{
                       width: "100%",
                       height: 280,
@@ -232,10 +283,9 @@ export default function HomePage() {
                       color: "#fff",
                       fontSize: "0.875rem",
                       fontWeight: 600,
+                      objectFit: "cover",
                     }}
-                  >
-                    INDOCOFFEE
-                  </Box>
+                  />
                   <CardContent>
                     <Typography
                       variant="h6"
@@ -297,11 +347,10 @@ export default function HomePage() {
               </Typography>
             </Box>
           )}
-
           <Box
             sx={{
               display: "flex",
-              justifyContent: "center",
+              justifyContent: "right",
               mt: 4,
               mb: 2,
             }}
