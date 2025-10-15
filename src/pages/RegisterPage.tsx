@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import * as yup from "yup";
 import {
@@ -8,6 +9,11 @@ import {
   Button,
   Link,
   Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
 import { useNavigate } from "react-router";
 
@@ -26,6 +32,7 @@ const registerSchema = yup.object({
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const [openConfirm, setOpenConfirm] = useState(false);
 
   const form = useForm({
     defaultValues: {
@@ -47,6 +54,11 @@ export default function RegisterPage() {
     },
   });
 
+  const handleConfirmSubmit = () => {
+    setOpenConfirm(false);
+    form.handleSubmit();
+  };
+
   return (
     <Container maxWidth="sm" sx={{ py: 8 }}>
       <Paper elevation={2} sx={{ p: 4 }}>
@@ -61,7 +73,7 @@ export default function RegisterPage() {
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            form.handleSubmit();
+            setOpenConfirm(true);
           }}
         >
           <form.Field
@@ -147,7 +159,6 @@ export default function RegisterPage() {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  console.log("Navigate to login");
                   navigate("/login");
                 }}
                 sx={{ fontWeight: 600, color: "primary.main" }}
@@ -158,6 +169,29 @@ export default function RegisterPage() {
           </Box>
         </form>
       </Paper>
+
+      <Dialog
+        open={openConfirm}
+        onClose={() => setOpenConfirm(false)}
+        aria-labelledby="confirm-register-title"
+      >
+        <DialogTitle id="confirm-register-title">
+          Confirm Registration
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to create this account?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenConfirm(false)} variant="outlined">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmSubmit} variant="contained" autoFocus>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }
