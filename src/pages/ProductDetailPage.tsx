@@ -7,7 +7,7 @@ import {
   Paper,
   Divider,
 } from "@mui/material";
-import { ChevronLeft, Plus, Minus } from "lucide-react";
+import { ChevronLeft, Plus, Minus, Droplet, Bean, Coffee } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
@@ -106,12 +106,6 @@ export default function ProductDetailPage() {
             </Typography>
           </Box>
 
-          <Divider sx={{ mb: 3 }} />
-
-          <Typography variant="body1" sx={{ mb: 4, lineHeight: 1.8 }}>
-            {mockProduct.description}
-          </Typography>
-
           <Box
             sx={{
               display: "flex",
@@ -148,6 +142,103 @@ export default function ProductDetailPage() {
                 <Plus size={18} />
               </IconButton>
             </Paper>
+          </Box>
+
+          <Divider sx={{ mb: 3 }} />
+
+          <Box sx={{ mb: 4 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                mb: 2,
+                fontWeight: 700,
+                textTransform: "uppercase",
+              }}
+            >
+              Keep in Mind
+            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 3,
+                alignItems: "center",
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <Box
+                  sx={{
+                    border: "2px solid #000",
+                    borderRadius: 1,
+                    p: 1.5,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Droplet size={24} />
+                </Box>
+                <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                  Keep Dry
+                </Typography>
+              </Box>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <Box
+                  sx={{
+                    border: "2px solid #000",
+                    borderRadius: 1,
+                    p: 1.5,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Bean size={24} />
+                </Box>
+                <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                  Origin
+                </Typography>
+              </Box>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <Box
+                  sx={{
+                    border: "2px solid #000",
+                    borderRadius: 1,
+                    p: 1.5,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Coffee size={24} />
+                </Box>
+                <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                  Roaster
+                </Typography>
+              </Box>
+            </Box>
           </Box>
 
           <Box
