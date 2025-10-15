@@ -6,6 +6,10 @@ import {
   Button,
   Divider,
   Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import { useParams } from "react-router";
 
@@ -40,10 +44,12 @@ const mockOrder = {
 export default function OrderDetailPage() {
   const { id } = useParams();
   const [status, setStatus] = useState(mockOrder.status);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const handleCancel = () => {
     console.log("Cancel order:", id);
     setStatus("Canceled");
+    setConfirmOpen(false);
   };
 
   const isCancellable = status === "In proccess";
@@ -239,7 +245,7 @@ export default function OrderDetailPage() {
             </Box>
           </Box>
 
-          {isCancellable && (
+          {isCancellable ? (
             <Box sx={{ mt: 4 }}>
               <Typography variant="body2" sx={{ mb: 2, fontSize: "0.875rem" }}>
                 • you can cancel before order is being roasted
@@ -247,7 +253,7 @@ export default function OrderDetailPage() {
               <Button
                 fullWidth
                 variant="contained"
-                onClick={handleCancel}
+                onClick={() => setConfirmOpen(true)}
                 sx={{
                   bgcolor: "#fbc02d",
                   borderColor: "#fbc02d",
@@ -263,9 +269,7 @@ export default function OrderDetailPage() {
                 CANCEL
               </Button>
             </Box>
-          )}
-
-          {!isCancellable && (
+          ) : (
             <Box sx={{ mt: 4 }}>
               <Typography variant="body2" sx={{ mb: 2, fontSize: "0.875rem" }}>
                 • you can cancel before order is being roasted
@@ -287,6 +291,24 @@ export default function OrderDetailPage() {
           )}
         </Paper>
       </Box>
+
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <DialogTitle>Confirm Cancel</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to cancel this order? This action cannot be
+            undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)} variant="outlined">
+            No
+          </Button>
+          <Button onClick={handleCancel} variant="contained" color="warning">
+            Yes, Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }
