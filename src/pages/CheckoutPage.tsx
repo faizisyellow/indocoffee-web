@@ -48,6 +48,15 @@ export default function CheckoutPage() {
   const [activeStep, setActiveStep] = useState(0);
   const [reviewData, setReviewData] = useState<any>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const fieldLabels: Record<AddressFields, string> = {
+    name: "Name",
+    phoneNumber: "Phone Number",
+    alternativeNumber: "Alternative Number",
+    street: "Street",
+    city: "City",
+  };
 
   const form = useForm({
     defaultValues: {
@@ -59,6 +68,7 @@ export default function CheckoutPage() {
     },
     onSubmit: async ({ value }) => {
       try {
+        setErrors({});
         await addressSchema.validate(value, { abortEarly: false });
 
         const payload = {
@@ -81,11 +91,18 @@ export default function CheckoutPage() {
         setActiveStep(2);
       } catch (error) {
         if (error instanceof yup.ValidationError) {
-          console.log("Validation errors:", error.errors);
+          const newErrors: Record<string, string> = {};
+          error.inner.forEach((err) => {
+            if (err.path && !newErrors[err.path])
+              newErrors[err.path] = err.message;
+          });
+          setErrors(newErrors);
         }
       }
     },
   });
+
+  type AddressFields = keyof typeof form.state.values;
 
   const handleProceedToAddress = () => setActiveStep(1);
   const handleBackToCart = () => setActiveStep(0);
@@ -178,16 +195,10 @@ export default function CheckoutPage() {
             }}
           >
             <Grid container spacing={3}>
-              {Object.entries({
-                name: "Name",
-                phoneNumber: "Phone Number",
-                alternativeNumber: "Alternative Number",
-                street: "Street",
-                city: "City",
-              }).map(([fieldName, label]) => (
+              {Object.entries(fieldLabels).map(([fieldName, label]) => (
                 <Grid size={{ xs: 12, md: 6 }} key={fieldName}>
                   <form.Field
-                    name={fieldName as any}
+                    name={fieldName as AddressFields}
                     children={(field) => (
                       <Box>
                         <Typography
@@ -202,7 +213,17 @@ export default function CheckoutPage() {
                           onChange={(e) => field.handleChange(e.target.value)}
                           onBlur={field.handleBlur}
                           sx={{ bgcolor: "#fff" }}
+                          error={Boolean(errors[fieldName])}
                         />
+                        {errors[fieldName] && (
+                          <Typography
+                            variant="caption"
+                            color="error"
+                            sx={{ display: "block", mt: 0.5 }}
+                          >
+                            {errors[fieldName]}
+                          </Typography>
+                        )}
                       </Box>
                     )}
                   />
