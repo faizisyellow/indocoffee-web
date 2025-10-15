@@ -217,7 +217,7 @@ export default function RegisterPage() {
             fullWidth
             variant="contained"
             size="large"
-            sx={{ py: 1.5, mb: 2 }}
+            sx={{ py: 1.5, my: 2 }}
           >
             REGISTER
           </Button>
