@@ -12,7 +12,7 @@ import {
   Avatar,
   Divider,
 } from "@mui/material";
-import { ShoppingCart, Coffee, LogOut, User } from "lucide-react";
+import { ShoppingCart, LogOut, User } from "lucide-react";
 import CartDrawer from "./CartDrawer";
 import { useNavigate } from "react-router";
 
@@ -82,19 +82,18 @@ export default function Header() {
             }}
             onClick={handleLogoClick}
           >
-            <Coffee size={24} color="#000" style={{ marginRight: 8 }} />
             <Typography
-              variant="h6"
+              variant="h3"
               sx={{
                 color: "#000",
                 fontWeight: 700,
+                fontSize: "26px",
                 letterSpacing: "0.05em",
               }}
             >
-              LOGO
+              INDOCOFFEE
             </Typography>
           </Box>
-
           <Box
             sx={{
               display: "flex",
