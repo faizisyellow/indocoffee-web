@@ -12,6 +12,7 @@ import {
   DialogActions,
 } from "@mui/material";
 import { useParams } from "react-router";
+import { useNavigate } from "react-router";
 
 const mockOrderItems = [
   {
@@ -45,6 +46,7 @@ export default function OrderDetailPage() {
   const { id } = useParams();
   const [status, setStatus] = useState(mockOrder.status);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleCancel = () => {
     console.log("Cancel order:", id);
@@ -52,13 +54,30 @@ export default function OrderDetailPage() {
     setConfirmOpen(false);
   };
 
+  function handleGoBack() {
+    navigate("/account");
+  }
+
   const isCancellable = status === "In proccess";
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Button
+        variant="outlined"
+        sx={{
+          color: "#0b341b",
+          borderColor: "#0b341b",
+          textTransform: "none",
+          fontWeight: 600,
+        }}
+        onClick={handleGoBack}
+      >
+        See All Orders
+      </Button>
+
       <Typography
         variant="h4"
-        sx={{ fontWeight: 700, mb: 4, textAlign: "center" }}
+        sx={{ fontWeight: 700, my: 6, textAlign: "center" }}
       >
         ORDER DETAIL
       </Typography>
@@ -247,7 +266,10 @@ export default function OrderDetailPage() {
 
           {isCancellable ? (
             <Box sx={{ mt: 4 }}>
-              <Typography variant="body2" sx={{ mb: 2, fontSize: "0.875rem" }}>
+              <Typography
+                variant="body2"
+                sx={{ mb: 2, fontSize: "0.875rem", color: "text.disabled" }}
+              >
                 • you can cancel before order is being roasted
               </Typography>
               <Button
