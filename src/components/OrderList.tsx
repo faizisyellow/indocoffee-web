@@ -6,17 +6,26 @@ import {
   Card,
   CardContent,
   Grid,
+  Pagination,
 } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
 export default function OrderList() {
   const [filter, setFilter] = useState("current");
+  const [page, setPage] = useState(1);
   const navigate = useNavigate();
 
   const handleOrderClick = (orderId: string) => {
     console.log("Navigate to order:", orderId);
     navigate(`/order/${orderId}`);
+  };
+
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    value: number,
+  ) => {
+    setPage(value);
   };
 
   const orders = [
@@ -50,6 +59,8 @@ export default function OrderList() {
       ],
     },
   ];
+
+  const totalPages = 10;
 
   return (
     <Box sx={{ pl: 6 }}>
@@ -143,6 +154,16 @@ export default function OrderList() {
           </CardContent>
         </Card>
       ))}
+
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3, mb: 4 }}>
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={handlePageChange}
+          variant="outlined"
+          shape="rounded"
+        />
+      </Box>
     </Box>
   );
 }
