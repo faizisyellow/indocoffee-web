@@ -23,6 +23,10 @@ const registerSchema = yup.object({
   password: yup
     .string()
     .min(6, "Password must be at least 6 characters")
+    .matches(
+      /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,
+      "Password must include at least one uppercase letter, one number, and one symbol",
+    )
     .required("Password is required"),
   confirmPassword: yup
     .string()
@@ -33,6 +37,7 @@ const registerSchema = yup.object({
 export default function RegisterPage() {
   const navigate = useNavigate();
   const [openConfirm, setOpenConfirm] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const form = useForm({
     defaultValues: {
@@ -43,16 +48,42 @@ export default function RegisterPage() {
     },
     onSubmit: async ({ value }) => {
       try {
+        setErrors({});
         await registerSchema.validate(value, { abortEarly: false });
         console.log("Register form submitted:", value);
         navigate("/");
       } catch (error) {
         if (error instanceof yup.ValidationError) {
-          console.log("Validation errors:", error.errors);
+          const newErrors: Record<string, string> = {};
+          error.inner.forEach((err) => {
+            if (err.path && !newErrors[err.path])
+              newErrors[err.path] = err.message;
+          });
+          setErrors(newErrors);
         }
       }
     },
   });
+
+  const handlePreConfirmSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      setErrors({});
+      await registerSchema.validate(form.state.values, { abortEarly: false });
+      setOpenConfirm(true);
+    } catch (error) {
+      if (error instanceof yup.ValidationError) {
+        const newErrors: Record<string, string> = {};
+        error.inner.forEach((err) => {
+          if (err.path && !newErrors[err.path])
+            newErrors[err.path] = err.message;
+        });
+        setErrors(newErrors);
+      }
+    }
+  };
 
   const handleConfirmSubmit = () => {
     setOpenConfirm(false);
@@ -69,73 +100,115 @@ export default function RegisterPage() {
           Register
         </Typography>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setOpenConfirm(true);
-          }}
-        >
+        <form onSubmit={handlePreConfirmSubmit}>
           <form.Field
             name="name"
             children={(field) => (
-              <TextField
-                fullWidth
-                label="Name"
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                onBlur={field.handleBlur}
-                margin="normal"
-                sx={{ mb: 2 }}
-              />
+              <Box>
+                <TextField
+                  fullWidth
+                  label="Name"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  margin="normal"
+                  sx={{ mb: 1 }}
+                  error={Boolean(errors.name)}
+                />
+                {errors.name && (
+                  <Typography
+                    variant="caption"
+                    color="error"
+                    sx={{ display: "block", mb: 1 }}
+                  >
+                    {errors.name}
+                  </Typography>
+                )}
+              </Box>
             )}
           />
 
           <form.Field
             name="email"
             children={(field) => (
-              <TextField
-                fullWidth
-                label="Email"
-                type="email"
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                onBlur={field.handleBlur}
-                margin="normal"
-                sx={{ mb: 2 }}
-              />
+              <Box>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  type="email"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  margin="normal"
+                  sx={{ mb: 1 }}
+                  error={Boolean(errors.email)}
+                />
+                {errors.email && (
+                  <Typography
+                    variant="caption"
+                    color="error"
+                    sx={{ display: "block", mb: 1 }}
+                  >
+                    {errors.email}
+                  </Typography>
+                )}
+              </Box>
             )}
           />
 
           <form.Field
             name="password"
             children={(field) => (
-              <TextField
-                fullWidth
-                label="Password"
-                type="password"
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                onBlur={field.handleBlur}
-                margin="normal"
-                sx={{ mb: 2 }}
-              />
+              <Box>
+                <TextField
+                  fullWidth
+                  label="Password"
+                  type="password"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  margin="normal"
+                  sx={{ mb: 1 }}
+                  error={Boolean(errors.password)}
+                />
+                {errors.password && (
+                  <Typography
+                    variant="caption"
+                    color="error"
+                    sx={{ display: "block", mb: 1 }}
+                  >
+                    {errors.password}
+                  </Typography>
+                )}
+              </Box>
             )}
           />
 
           <form.Field
             name="confirmPassword"
             children={(field) => (
-              <TextField
-                fullWidth
-                label="Confirm Password"
-                type="password"
-                value={field.state.value}
-                onChange={(e) => field.handleChange(e.target.value)}
-                onBlur={field.handleBlur}
-                margin="normal"
-                sx={{ mb: 3 }}
-              />
+              <Box>
+                <TextField
+                  fullWidth
+                  label="Confirm Password"
+                  type="password"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  margin="normal"
+                  sx={{ mb: 1 }}
+                  error={Boolean(errors.confirmPassword)}
+                />
+                {errors.confirmPassword && (
+                  <Typography
+                    variant="caption"
+                    color="error"
+                    sx={{ display: "block", mb: 2 }}
+                  >
+                    {errors.confirmPassword}
+                  </Typography>
+                )}
+              </Box>
             )}
           />
 
@@ -144,10 +217,7 @@ export default function RegisterPage() {
             fullWidth
             variant="contained"
             size="large"
-            sx={{
-              py: 1.5,
-              mb: 2,
-            }}
+            sx={{ py: 1.5, mb: 2 }}
           >
             REGISTER
           </Button>
