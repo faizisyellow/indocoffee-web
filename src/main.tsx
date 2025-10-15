@@ -5,12 +5,15 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { router } from "./routes";
 import { theme } from "./theme";
 import { RouterProvider } from "react-router/dom";
+import { AlertProvider } from "./components/AlertProvider";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <RouterProvider router={router} />
+      <AlertProvider>
+        <RouterProvider router={router} />
+      </AlertProvider>
     </ThemeProvider>
   </StrictMode>,
 );
