@@ -47,4 +47,28 @@ export class AuthenticationService {
     localStorage.clear();
     window.location.href = "/login";
   }
+
+  isAuthenticated(): boolean {
+    const token = localStorage.getItem("token");
+    if (!token) return false;
+
+    try {
+      const base64Url = token.split(".")[1];
+      if (!base64Url) return false;
+
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join(""),
+      );
+      const claims = JSON.parse(jsonPayload);
+
+      return Object.keys(claims).length > 0;
+    } catch {
+      localStorage.removeItem("token");
+      return false;
+    }
+  }
 }

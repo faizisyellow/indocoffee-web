@@ -4,15 +4,21 @@ import AccountSidebar from "../components/AccountSidebar";
 import OrderList from "../components/OrderList";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
+import { clientWithAuth } from "../service/axios";
+import { ProfileService } from "../service/profile";
+import { useQuery } from "@tanstack/react-query";
 
 export default function AccountPage() {
   const [selectedMenu, setSelectedMenu] = useState("orders");
   const navigate = useNavigate();
 
-  const user = {
-    name: "Lizzy McAlpine",
-    email: "lizzy@test.test",
-  };
+  const profileService = new ProfileService(clientWithAuth);
+  const getProfileResult = useQuery({
+    queryKey: ["users"],
+    queryFn: () => {
+      return profileService.getProfile();
+    },
+  });
 
   const renderContent = () => {
     switch (selectedMenu) {
@@ -58,7 +64,9 @@ export default function AccountPage() {
             Your Account
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {user.name}, Email: {user.email}
+            {getProfileResult.isLoading || getProfileResult.isError
+              ? ""
+              : `${getProfileResult.data?.username}, Email: ${getProfileResult.data?.email}`}
           </Typography>
         </Box>
       </Box>

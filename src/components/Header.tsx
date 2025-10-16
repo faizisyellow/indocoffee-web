@@ -17,6 +17,8 @@ import CartDrawer from "./CartDrawer";
 import { useNavigate } from "react-router";
 import { AuthenticationService } from "../service/authentication";
 import { clientWithAuth } from "../service/axios";
+import { useQuery } from "@tanstack/react-query";
+import { ProfileService } from "../service/profile";
 
 export default function Header() {
   const navigate = useNavigate();
@@ -25,32 +27,32 @@ export default function Header() {
     useState<null | HTMLElement>(null);
   const cartItemCount = 2;
 
-  const isLoggedIn = true;
-  const userProfile = {
-    name: "John Smith",
-    email: "johnsmith@mail.com",
-    initials: "JS",
-  };
+  const authService = new AuthenticationService(clientWithAuth);
+  const profileService = new ProfileService(clientWithAuth);
+
+  const isLoggedIn = authService.isAuthenticated();
+
+  const getProfileResult = useQuery({
+    queryKey: ["users"],
+    queryFn: () => profileService.getProfile(),
+    enabled: isLoggedIn,
+  });
 
   const handleLogoClick = () => navigate("/");
   const handleCartClick = () => setCartOpen(true);
   const handleCartClose = () => setCartOpen(false);
   const handleLogin = () => navigate("/login");
   const handleRegister = () => navigate("/register");
-  const authService = new AuthenticationService(clientWithAuth);
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    console.log("Open profile menu");
     setProfileMenuAnchor(event.currentTarget);
   };
 
   const handleProfileMenuClose = () => {
-    console.log("Close profile menu");
     setProfileMenuAnchor(null);
   };
 
   const handleGoToMyAccount = () => {
-    console.log("Navigate to my orders");
     navigate("/account");
     handleProfileMenuClose();
   };
@@ -97,13 +99,8 @@ export default function Header() {
               INDOCOFFEE
             </Typography>
           </Box>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-            }}
-          >
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             {!isLoggedIn ? (
               <Box sx={{ display: "flex", gap: 2 }}>
                 <Button variant="outlined" onClick={handleLogin}>
@@ -128,6 +125,7 @@ export default function Header() {
                     <ShoppingCart size={24} color="#000" />
                   </Badge>
                 </IconButton>
+
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Avatar
                     onClick={handleProfileMenuOpen}
@@ -141,8 +139,11 @@ export default function Header() {
                       "&:hover": { opacity: 0.8 },
                     }}
                   >
-                    {userProfile.initials}
+                    {getProfileResult.isLoading || getProfileResult.isError
+                      ? "U"
+                      : getProfileResult.data?.username[0].toUpperCase()}
                   </Avatar>
+
                   <Menu
                     anchorEl={profileMenuAnchor}
                     open={Boolean(profileMenuAnchor)}
@@ -164,7 +165,7 @@ export default function Header() {
                       },
                     }}
                   >
-                    {/* User Info Header */}
+                    {/* User Info */}
                     <MenuItem
                       sx={{ flexDirection: "column", alignItems: "flex-start" }}
                     >
@@ -177,20 +178,19 @@ export default function Header() {
                         }}
                       >
                         <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {userProfile.name}
+                          {getProfileResult.data?.username ?? "User"}
                         </Typography>
                       </Box>
                       <Typography
                         variant="caption"
                         sx={{ color: "text.secondary" }}
                       >
-                        {userProfile.email}
+                        {getProfileResult.data?.email ?? ""}
                       </Typography>
                     </MenuItem>
 
                     <Divider sx={{ my: 1 }} />
 
-                    {/* Menu Items */}
                     <MenuItem onClick={handleGoToMyAccount}>
                       <User size={18} style={{ marginRight: 12 }} />
                       <Typography variant="body2">My Account</Typography>
