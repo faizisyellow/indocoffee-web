@@ -9,7 +9,10 @@ import {
 } from "@mui/material";
 import { ChevronLeft, Plus, Minus, Droplet, Bean, Coffee } from "lucide-react";
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate } from "react-router";
+import { AuthenticationService } from "../service/authentication";
+import { client } from "../service/axios";
+import { useAlert } from "../hooks/useAlert";
 
 const mockProduct = {
   id: 1,
@@ -24,9 +27,10 @@ const mockProduct = {
 };
 
 export default function ProductDetailPage() {
-  const { id } = useParams();
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
+  const authService = new AuthenticationService(client);
+  const alert = useAlert();
 
   const handleBack = () => {
     console.log("Navigate back to home");
@@ -34,7 +38,11 @@ export default function ProductDetailPage() {
   };
 
   const handleAddToCart = () => {
-    console.log("Add to cart:", { productId: id, quantity });
+    if (!authService.isAuthenticated()) {
+      navigate("/login");
+      return;
+    }
+    alert.success("Success add product");
   };
 
   const handleIncrement = () => {
