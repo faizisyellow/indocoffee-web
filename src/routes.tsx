@@ -8,44 +8,56 @@ import CheckoutPage from "./pages/CheckoutPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
 import AccountPage from "./pages/Account";
 import NotFoundPage from "./pages/NotFoundPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
     children: [
-      {
-        index: true,
-        element: <HomePage />,
-      },
-      {
-        path: "product/:id",
-        element: <ProductDetailPage />,
-      },
+      { index: true, element: <HomePage /> },
+      { path: "product/:id", element: <ProductDetailPage /> },
       {
         path: "account",
-        element: <AccountPage />,
-      },
-      {
-        path: "login",
-        element: <LoginPage />,
-      },
-      {
-        path: "register",
-        element: <RegisterPage />,
+        element: (
+          <ProtectedRoute requireAuth>
+            <AccountPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "checkout",
-        element: <CheckoutPage />,
+        element: (
+          <ProtectedRoute requireAuth>
+            <CheckoutPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "order/:id",
-        element: <OrderDetailPage />,
+        element: (
+          <ProtectedRoute requireAuth>
+            <OrderDetailPage />
+          </ProtectedRoute>
+        ),
       },
       {
-        path: "*",
-        element: <NotFoundPage />,
+        path: "login",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <LoginPage />
+          </ProtectedRoute>
+        ),
       },
+      {
+        path: "register",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <RegisterPage />
+          </ProtectedRoute>
+        ),
+      },
+      { path: "*", element: <NotFoundPage /> },
     ],
   },
 ]);
