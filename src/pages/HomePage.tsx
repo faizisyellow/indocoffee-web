@@ -14,102 +14,22 @@ import {
   MenuItem,
   FormControl,
   Pagination,
+  capitalize,
 } from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
-
-const mockProducts = [
-  {
-    id: 1,
-    name: "ARABICA",
-    price: 150,
-    image: "/coffee-arabica.jpg",
-    type: "WHOLE COFFEE BEANS",
-    size: "200G",
-    roast: "LIGHT",
-    form: "WHOLE BEAN",
-    bean: "ARABICA",
-  },
-  {
-    id: 2,
-    name: "ROBUSTA",
-    price: 120,
-    image: "/coffee-robusta.jpg",
-    type: "WHOLE COFFEE BEANS",
-    size: "200G",
-    roast: "DARK",
-    form: "WHOLE BEAN",
-    bean: "ROBUSTA",
-  },
-  {
-    id: 3,
-    name: "LIBERICA",
-    price: 180,
-    image: "/coffee-liberica.jpg",
-    type: "WHOLE COFFEE BEANS",
-    size: "200G",
-    roast: "MEDIUM",
-    form: "GROUND BEAN",
-    bean: "ARABICA",
-  },
-  {
-    id: 4,
-    name: "EXCELSA",
-    price: 160,
-    image: "/coffee-excelsa.jpg",
-    type: "WHOLE COFFEE BEANS",
-    size: "200G",
-    roast: "LIGHT",
-    form: "WHOLE BEAN",
-    bean: "ROBUSTA",
-  },
-  {
-    id: 5,
-    name: "EXCELSA",
-    price: 160,
-    image: "/coffee-excelsa.jpg",
-    type: "WHOLE COFFEE BEANS",
-    size: "200G",
-    roast: "LIGHT",
-    form: "WHOLE BEAN",
-    bean: "ROBUSTA",
-  },
-  {
-    id: 6,
-    name: "EXCELSA",
-    price: 160,
-    image: "/coffee-excelsa.jpg",
-    type: "WHOLE COFFEE BEANS",
-    size: "200G",
-    roast: "LIGHT",
-    form: "WHOLE BEAN",
-    bean: "ROBUSTA",
-  },
-  {
-    id: 7,
-    name: "EXCELSA",
-    price: 160,
-    image: "/coffee-excelsa.jpg",
-    type: "WHOLE COFFEE BEANS",
-    size: "200G",
-    roast: "LIGHT",
-    form: "WHOLE BEAN",
-    bean: "ROBUSTA",
-  },
-  {
-    id: 8,
-    name: "EXCELSA",
-    price: 160,
-    image: "/coffee-excelsa.jpg",
-    type: "WHOLE COFFEE BEANS",
-    size: "200G",
-    roast: "LIGHT",
-    form: "WHOLE BEAN",
-    bean: "ROBUSTA",
-  },
-];
+import { InventoryService } from "../service/inventory";
+import { client } from "../service/axios";
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const inventoryService = new InventoryService(client);
+  const getProducts = useQuery({
+    queryKey: ["products"],
+    queryFn: () => {
+      return inventoryService.GetProducts();
+    },
+  });
 
   const handleProductClick = (productId: number) => {
     console.log("Navigate to product:", productId);
@@ -257,7 +177,7 @@ export default function HomePage() {
 
         <Grid size={{ xs: 12, md: 9.5 }}>
           <Grid container spacing={3}>
-            {mockProducts.map((product) => (
+            {getProducts?.data?.map((product) => (
               <Grid
                 size={{ xs: 12, sm: 6, md: 4, lg: 4 }}
                 sx={{ marginBottom: 2 }}
@@ -266,9 +186,7 @@ export default function HomePage() {
                 <Card sx={{ height: "100%", borderRadius: 0 }}>
                   <Box
                     component="img"
-                    src={
-                      "https://xqe3120hr5.ufs.sh/f/H9qtOxZed3fhDOhPjcn7VTApPwYdvjUimq06kQcZJ1rsEI8x"
-                    }
+                    src={product.image}
                     alt={"product"}
                     sx={{
                       width: "100%",
@@ -289,7 +207,7 @@ export default function HomePage() {
                       component="div"
                       sx={{ fontWeight: 700, mb: 1 }}
                     >
-                      {product.name}
+                      {capitalize(product.bean.name)}
                     </Typography>
                     <Typography
                       variant="h6"
@@ -301,19 +219,13 @@ export default function HomePage() {
                       variant="body2"
                       sx={{ fontSize: "0.75rem", color: "text.secondary" }}
                     >
-                      {product.type}
+                      {capitalize(product.form.name)}
                     </Typography>
                     <Typography
                       variant="body2"
                       sx={{ fontSize: "0.75rem", color: "text.secondary" }}
                     >
-                      SIZE | {product.size}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ fontSize: "0.75rem", color: "text.secondary" }}
-                    >
-                      ROAST | {product.roast}
+                      ROAST | {capitalize(product.roasted)}
                     </Typography>
                   </CardContent>
                   <CardActions sx={{ p: 2, pt: 0 }}>
@@ -330,7 +242,7 @@ export default function HomePage() {
             ))}
           </Grid>
 
-          {mockProducts.length === 0 && (
+          {getProducts?.data?.length === 0 && (
             <Box
               sx={{
                 display: "flex",
