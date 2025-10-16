@@ -15,6 +15,8 @@ import {
 import { ShoppingCart, LogOut, User } from "lucide-react";
 import CartDrawer from "./CartDrawer";
 import { useNavigate } from "react-router";
+import { AuthenticationService } from "../service/authentication";
+import { clientWithAuth } from "../service/axios";
 
 export default function Header() {
   const navigate = useNavigate();
@@ -35,6 +37,7 @@ export default function Header() {
   const handleCartClose = () => setCartOpen(false);
   const handleLogin = () => navigate("/login");
   const handleRegister = () => navigate("/register");
+  const authService = new AuthenticationService(clientWithAuth);
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     console.log("Open profile menu");
@@ -53,7 +56,7 @@ export default function Header() {
   };
 
   const handleLogout = () => {
-    console.log("User logged out");
+    authService.logout();
     handleProfileMenuClose();
   };
 

@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
+
 import * as yup from "yup";
 import {
   Container,
@@ -14,8 +16,13 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Alert,
 } from "@mui/material";
 import { useNavigate } from "react-router";
+import type { RegisterRequest } from "../service/axios/type";
+import { AuthenticationService } from "../service/authentication";
+import { client } from "../service/axios";
+import { prettyErrorServer } from "../utils/prettyErrorServer";
 
 const registerSchema = yup.object({
   name: yup.string().required("Name is required"),
@@ -38,6 +45,23 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const [openConfirm, setOpenConfirm] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const authService = new AuthenticationService(client);
+
+  const registerMutation = useMutation({
+    mutationFn: (payload: RegisterRequest) => {
+      return authService.register(payload);
+    },
+    onSuccess: (response) => {
+      localStorage.clear();
+      localStorage.setItem("token", response.token);
+      navigate("/");
+    },
+  });
+
+  const errorServer = prettyErrorServer(registerMutation.error, {
+    409: "This email is already registered. Try signing in instead.",
+    404: "We couldn’t verify your registration.",
+  });
 
   const form = useForm({
     defaultValues: {
@@ -50,8 +74,12 @@ export default function RegisterPage() {
       try {
         setErrors({});
         await registerSchema.validate(value, { abortEarly: false });
-        console.log("Register form submitted:", value);
-        navigate("/");
+
+        registerMutation.mutate({
+          username: value.name,
+          email: value.email,
+          password: value.password,
+        });
       } catch (error) {
         if (error instanceof yup.ValidationError) {
           const newErrors: Record<string, string> = {};
@@ -99,6 +127,12 @@ export default function RegisterPage() {
         >
           Register
         </Typography>
+
+        {registerMutation.isError && errorServer && (
+          <Alert severity="error" sx={{ my: 4 }}>
+            {errorServer}
+          </Alert>
+        )}
 
         <form onSubmit={handlePreConfirmSubmit}>
           <form.Field

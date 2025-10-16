@@ -8,9 +8,15 @@ import {
   Button,
   Link,
   Paper,
+  Alert,
 } from "@mui/material";
 import { useNavigate } from "react-router";
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import type { LoginRequest } from "../service/axios/type";
+import { AuthenticationService } from "../service/authentication";
+import { client } from "../service/axios";
+import { prettyErrorServer } from "../utils/prettyErrorServer";
 
 const loginSchema = yup.object({
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -20,6 +26,18 @@ const loginSchema = yup.object({
 export default function LoginPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
+  const authService = new AuthenticationService(client);
+
+  const loginMutation = useMutation({
+    mutationFn: (cred: LoginRequest) => {
+      return authService.login(cred);
+    },
+    onSuccess: (response) => {
+      localStorage.clear();
+      localStorage.setItem("token", response.token);
+      navigate("/");
+    },
+  });
 
   const form = useForm({
     defaultValues: {
@@ -30,8 +48,11 @@ export default function LoginPage() {
       try {
         setErrors({});
         await loginSchema.validate(value, { abortEarly: false });
-        console.log("Login form submitted:", value);
-        navigate("/");
+
+        loginMutation.mutate({
+          email: value.email,
+          password: value.password,
+        });
       } catch (error) {
         if (error instanceof yup.ValidationError) {
           const newErrors: Record<string, string> = {};
@@ -45,6 +66,10 @@ export default function LoginPage() {
     },
   });
 
+  const errorServer = prettyErrorServer(loginMutation.error, {
+    404: "You don't have an account. Please register first",
+  });
+
   return (
     <Container maxWidth="sm" sx={{ py: 8 }}>
       <Paper elevation={2} sx={{ p: 4 }}>
@@ -54,6 +79,12 @@ export default function LoginPage() {
         >
           Login
         </Typography>
+
+        {loginMutation.isError && errorServer && (
+          <Alert severity="error" sx={{ my: 4 }}>
+            {errorServer}
+          </Alert>
+        )}
 
         <form
           onSubmit={(e) => {
