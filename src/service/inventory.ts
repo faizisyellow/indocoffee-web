@@ -8,14 +8,24 @@ export class InventoryService {
     this.axios = axios;
   }
 
-  async GetProducts(filter: {
-    bean: string;
-    form: string;
-    offset: number;
-    limit: number;
-    sort: "asc" | "desc";
-  }): Promise<Products> {
-    const result = await this.axios.get<ApiResponse<Products>>("products");
+  async GetProducts(
+    bean?: number,
+    form?: number,
+    sort?: "asc" | "desc",
+    limit?: number,
+    offset?: number,
+  ): Promise<Products> {
+    const params = new URLSearchParams();
+    if (bean) params.append("bean", String(bean));
+    if (form) params.append("form", String(form));
+    if (sort) params.append("sort", sort);
+    if (offset !== undefined) params.append("offset", offset.toString());
+    if (limit !== undefined) params.append("limit", limit.toString());
+
+    const queryString = params.toString();
+    const url = queryString ? `products?${queryString}` : "products/";
+
+    const result = await this.axios.get<ApiResponse<Products>>(url);
     return result.data?.data;
   }
 

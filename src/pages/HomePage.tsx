@@ -13,54 +13,93 @@ import {
   Select,
   MenuItem,
   FormControl,
-  Pagination,
   capitalize,
 } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { InventoryService } from "../service/inventory";
 import { client } from "../service/axios";
+import { useState } from "react";
+
+const limit = 8;
 
 export default function HomePage() {
+  const [selectedForm, setSelectedForm] = useState<number | null>(null);
+  const [selectedBean, setSelectedBean] = useState<number | null>(null);
+  const [sort, setSort] = useState<"asc" | "desc">("asc");
+  const [page, setPage] = useState<number>(1);
+
   const navigate = useNavigate();
   const inventoryService = new InventoryService(client);
+
+  const offset = (page - 1) * limit;
   const getProducts = useQuery({
-    queryKey: ["products"],
+    queryKey: [
+      "products",
+      selectedBean,
+      selectedForm,
+      sort,
+      page,
+      limit,
+      offset,
+    ],
     queryFn: () => {
-      return inventoryService.GetProducts();
+      return inventoryService.GetProducts(
+        selectedBean ?? undefined,
+        selectedForm ?? undefined,
+        sort,
+        limit,
+        offset === 0 ? undefined : offset,
+      );
     },
   });
 
+  const getBeans = useQuery({
+    queryKey: ["beans"],
+    queryFn: () => {
+      return inventoryService.GetBeans();
+    },
+    staleTime: 1000 * 60 * 10,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
+
+  const getForms = useQuery({
+    queryKey: ["forms"],
+    queryFn: () => {
+      return inventoryService.GetForms();
+    },
+    staleTime: 1000 * 60 * 10,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
+
   const handleProductClick = (productId: number) => {
-    console.log("Navigate to product:", productId);
     navigate(`/product/${productId}`);
   };
 
-  const handleFormChange = (form: string) => {
-    console.log("Filter by form:", form);
+  const handleFormChange = (form: number) => {
+    setSelectedForm((prev) => (prev === form ? null : form));
   };
 
-  const handleBeanChange = (bean: string) => {
-    console.log("Filter by bean:", bean);
+  const handleBeanChange = (bean: number) => {
+    setSelectedBean((prev) => (prev === bean ? null : bean));
   };
 
   const handleSortChange = (sortOption: string) => {
-    console.log("Sort by name:", sortOption);
+    setSort(sortOption as "asc" | "desc");
   };
 
   const handleClearAllFilters = () => {
-    console.log("Clear all filters");
+    setSelectedForm(null);
+    setSelectedBean(null);
+    setSort("asc");
   };
 
-  const handlePageChange = (
-    event: React.ChangeEvent<unknown>,
-    page: number,
-  ) => {
-    console.log("Page changed to:", page);
+  const handlePageChange = (page: number) => {
+    setPage(page++);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
-  const forms = ["WHOLE BEAN", "GROUND BEAN"];
-  const beans = ["ARABICA", "ROBUSTA"];
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -124,18 +163,19 @@ export default function HomePage() {
                 Form
               </Typography>
               <FormGroup>
-                {forms.map((form) => (
+                {getForms?.data?.map((form) => (
                   <FormControlLabel
-                    key={form}
+                    key={form.id}
                     control={
                       <Checkbox
                         size="small"
-                        onChange={() => handleFormChange(form)}
+                        checked={selectedForm === form.id}
+                        onChange={() => handleFormChange(form.id)}
                       />
                     }
                     label={
                       <Typography variant="body2" sx={{ fontSize: "0.75rem" }}>
-                        {form}
+                        {form.name.toUpperCase()}
                       </Typography>
                     }
                   />
@@ -154,18 +194,19 @@ export default function HomePage() {
                 Bean
               </Typography>
               <FormGroup>
-                {beans.map((bean) => (
+                {getBeans?.data?.map((bean) => (
                   <FormControlLabel
-                    key={bean}
+                    key={bean.id}
                     control={
                       <Checkbox
                         size="small"
-                        onChange={() => handleBeanChange(bean)}
+                        checked={selectedBean === bean.id}
+                        onChange={() => handleBeanChange(bean.id)}
                       />
                     }
                     label={
                       <Typography variant="body2" sx={{ fontSize: "0.75rem" }}>
-                        {bean}
+                        {bean.name.toUpperCase()}
                       </Typography>
                     }
                   />
@@ -259,18 +300,49 @@ export default function HomePage() {
           <Box
             sx={{
               display: "flex",
-              justifyContent: "right",
-              mt: 4,
-              mb: 2,
+              gap: 1,
+              alignItems: "center",
+              justifyContent: "space-between",
+              my: 4,
             }}
           >
-            <Pagination
-              count={5}
-              defaultPage={1}
-              onChange={handlePageChange}
-              variant="outlined"
-              shape="rounded"
-            />
+            <Typography variant="body2" color="text.secondary">
+              Page {page} • Showing {getProducts?.data?.length} items
+            </Typography>
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <Button
+                variant="outlined"
+                size="small"
+                disabled={page === 1}
+                onClick={() => handlePageChange(page - 1)}
+                sx={{
+                  textTransform: "none",
+                  minWidth: 90,
+                }}
+              >
+                Previous
+              </Button>
+              <Typography
+                variant="body2"
+                sx={{ px: 2, color: "text.secondary" }}
+              >
+                Page {page}
+              </Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                disabled={
+                  getProducts.data ? getProducts?.data?.length < limit : false
+                }
+                onClick={() => handlePageChange(page + 1)}
+                sx={{
+                  textTransform: "none",
+                  minWidth: 90,
+                }}
+              >
+                Next
+              </Button>
+            </Box>
           </Box>
         </Grid>
       </Grid>
