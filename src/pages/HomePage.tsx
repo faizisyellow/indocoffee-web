@@ -283,7 +283,7 @@ export default function HomePage() {
             ))}
           </Grid>
 
-          {getProducts?.data?.length === 0 && (
+          {!getProducts.isLoading && getProducts.data?.length === 0 && (
             <Box
               sx={{
                 display: "flex",
@@ -292,11 +292,12 @@ export default function HomePage() {
                 minHeight: 400,
               }}
             >
-              <Typography variant="body1" color="text.secondary">
+              <Typography variant="h6" color="text.secondary">
                 No products found. Try adjusting your filters.
               </Typography>
             </Box>
           )}
+
           <Box
             sx={{
               display: "flex",
@@ -331,9 +332,7 @@ export default function HomePage() {
               <Button
                 variant="outlined"
                 size="small"
-                disabled={
-                  getProducts.data ? getProducts?.data?.length < limit : false
-                }
+                disabled={!getProducts.data || getProducts.data.length < limit}
                 onClick={() => handlePageChange(page + 1)}
                 sx={{
                   textTransform: "none",

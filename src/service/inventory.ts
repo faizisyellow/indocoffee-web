@@ -26,7 +26,7 @@ export class InventoryService {
     const url = queryString ? `products?${queryString}` : "products/";
 
     const result = await this.axios.get<ApiResponse<Products>>(url);
-    return result.data?.data;
+    return result.data?.data ?? [];
   }
 
   async GetProduct(id: number): Promise<Product> {
