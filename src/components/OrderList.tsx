@@ -7,14 +7,35 @@ import {
   CardContent,
   Grid,
   Pagination,
+  capitalize,
 } from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { ProfileService } from "../service/profile";
+import { clientWithAuth } from "../service/axios";
+
+const STATUS_COLORS = {
+  confirm: "#1976d2",
+  roasting: "#f57c00",
+  cancelled: "#d32f2f",
+  shipped: "#0288d1",
+  complete: "#2e7d32",
+};
 
 export default function OrderList() {
   const [filter, setFilter] = useState("current");
   const [page, setPage] = useState(1);
   const navigate = useNavigate();
+
+  const userService = new ProfileService(clientWithAuth);
+
+  const getOrders = useQuery({
+    queryKey: ["users_orders"],
+    queryFn: () => {
+      return userService.getUsersOrders();
+    },
+  });
 
   const handleOrderClick = (orderId: string) => {
     console.log("Navigate to order:", orderId);
@@ -27,38 +48,6 @@ export default function OrderList() {
   ) => {
     setPage(value);
   };
-
-  const orders = [
-    {
-      id: "2135153sads",
-      status: "On the way",
-      deliveryDate: "Fri, 13 Nov, 2025",
-      address: "Great street, New York Brooklyn 5A, PO: 212891",
-      total: 340,
-      products: [
-        {
-          id: 1,
-          name: "Great product name goes here",
-          price: 340,
-          color: "Silver",
-          size: "Large",
-          quantity: 1,
-          image:
-            "https://xqe3120hr5.ufs.sh/f/H9qtOxZed3fhDOhPjcn7VTApPwYdvjUimq06kQcZJ1rsEI8x",
-        },
-        {
-          id: 2,
-          name: "Table lamp for office or bedroom",
-          price: 76,
-          color: "Silver",
-          size: "Large",
-          quantity: 1,
-          image:
-            "https://xqe3120hr5.ufs.sh/f/H9qtOxZed3fhDOhPjcn7VTApPwYdvjUimq06kQcZJ1rsEI8x",
-        },
-      ],
-    },
-  ];
 
   const totalPages = 10;
 
@@ -90,7 +79,7 @@ export default function OrderList() {
         </Tabs>
       </Box>
 
-      {orders.map((order) => (
+      {getOrders?.data?.map((order) => (
         <Card
           onClick={() => handleOrderClick(order.id)}
           key={order.id}
@@ -105,30 +94,40 @@ export default function OrderList() {
             <Typography variant="subtitle1" fontWeight={600}>
               Order #: {order.id}
             </Typography>
-            <Typography variant="body2" sx={{ color: "#555" }}>
+            <Typography variant="body2" sx={{ color: "#555", mt: 1 }}>
               Status:{" "}
-              <Box component="span" sx={{ color: "#f57c00", fontWeight: 600 }}>
-                {order.status}
+              <Box
+                component="span"
+                sx={{
+                  color:
+                    STATUS_COLORS[
+                      order.status?.toLowerCase() as keyof typeof STATUS_COLORS
+                    ] || "#555",
+                  fontWeight: 600,
+                }}
+              >
+                {capitalize(order.status)}
               </Box>
             </Typography>
             <Typography variant="body2">
-              Date of delivery: {order.deliveryDate}
+              Date of order: {new Date(order.created_at).toLocaleString()}
             </Typography>
             <Typography variant="body2">
-              Delivered to: {order.address}
+              Delivered to:{" "}
+              {`${capitalize(order.street)}, ${capitalize(order.city)}`}
             </Typography>
             <Typography variant="body2" fontWeight={600} sx={{ mt: 1 }}>
-              Total: ${order.total.toFixed(2)}
+              Total: ${order.total_price.toFixed(2)}
             </Typography>
 
             <Grid container spacing={2} sx={{ mt: 2 }}>
-              {order.products.map((p) => (
+              {order.items.map((p) => (
                 <Grid size={{ xs: 12, sm: 6 }} key={p.id}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                     <Box
                       component="img"
                       src={p.image}
-                      alt={p.name}
+                      alt={p.bean_name}
                       sx={{
                         width: 60,
                         height: 60,
@@ -139,13 +138,14 @@ export default function OrderList() {
                     />
                     <Box>
                       <Typography variant="body2" fontWeight={600}>
-                        {p.name}
+                        {`${capitalize(p.bean_name)} | ${capitalize(p.roasted)}`}
                       </Typography>
                       <Typography variant="body2">
-                        Quantity: {p.quantity} × USD {p.price}
+                        Form: {capitalize(p.form_name)}
                       </Typography>
-                      <Typography variant="body2">Color: {p.color}</Typography>
-                      <Typography variant="body2">Size: {p.size}</Typography>
+                      <Typography variant="body2">
+                        Quantity: {p.order_quantity}
+                      </Typography>
                     </Box>
                   </Box>
                 </Grid>

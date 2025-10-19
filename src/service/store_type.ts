@@ -49,3 +49,29 @@ export type Product = {
 };
 
 export type Products = Product[];
+
+export type Order = {
+  alternative_phone_number: string;
+  city: string;
+  created_at: string;
+  customer_email: string;
+  customer_name: string;
+  id: string;
+  items: [
+    {
+      bean_name: string;
+      form_name: string;
+      id: number;
+      image: string;
+      order_quantity: number;
+      price: number;
+      roasted: string;
+    },
+  ];
+  phone_number: string;
+  status: string;
+  street: string;
+  total_price: number;
+};
+
+export type Orders = Order[];
