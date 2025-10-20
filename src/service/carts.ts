@@ -22,4 +22,7 @@ export class CartsService {
 
     return response.data.data;
   }
+
+  async IncreaseQuantity(id: number) {}
+  async DecreaseQuantity(id: number) {}
 }

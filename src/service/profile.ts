@@ -1,5 +1,5 @@
 import type { AxiosInstance } from "axios";
-import type { Orders, User } from "./store_type";
+import type { Orders, User, UsersCarts } from "./store_type";
 import type { ApiResponse } from "./axios/type";
 
 export class ProfileService {
@@ -31,5 +31,11 @@ export class ProfileService {
 
     const { data } = await this.axios.get<ApiResponse<Orders>>(url);
     return data?.data;
+  }
+
+  async GetUsersCarts(): Promise<UsersCarts> {
+    const response =
+      await this.axios.get<ApiResponse<UsersCarts>>("users/cart");
+    return response.data.data;
   }
 }

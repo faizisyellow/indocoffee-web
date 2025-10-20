@@ -75,3 +75,27 @@ export type Order = {
 };
 
 export type Orders = Order[];
+
+export type UsersCarts = {
+  id: number;
+  username: string;
+  carts: [
+    {
+      id: number;
+      product: {
+        bean: {
+          name: string;
+        };
+        form: {
+          name: string;
+        };
+        id: number;
+        image: string;
+        price: number;
+        roasted: string;
+        stock: number;
+      };
+      quantity: number;
+    },
+  ];
+};
