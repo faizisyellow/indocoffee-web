@@ -25,7 +25,6 @@ export default function Header() {
   const [cartOpen, setCartOpen] = useState(false);
   const [profileMenuAnchor, setProfileMenuAnchor] =
     useState<null | HTMLElement>(null);
-  const cartItemCount = 2;
 
   const authService = new AuthenticationService(clientWithAuth);
   const profileService = new ProfileService(clientWithAuth);
@@ -37,6 +36,13 @@ export default function Header() {
     queryFn: () => profileService.getProfile(),
     enabled: isLoggedIn,
   });
+
+  const { data: cartsData } = useQuery({
+    queryKey: ["carts"],
+    queryFn: () => profileService.GetUsersCarts(),
+  });
+
+  const cartCount = cartsData?.carts?.length ?? 0;
 
   const handleLogoClick = () => navigate("/");
   const handleCartClick = () => setCartOpen(true);
@@ -121,7 +127,7 @@ export default function Header() {
                     height: 48,
                   }}
                 >
-                  <Badge badgeContent={cartItemCount} color="primary">
+                  <Badge badgeContent={cartCount} color="primary">
                     <ShoppingCart size={24} color="#000" />
                   </Badge>
                 </IconButton>

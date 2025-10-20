@@ -23,6 +23,22 @@ export class CartsService {
     return response.data.data;
   }
 
-  async IncreaseQuantity(id: number) {}
-  async DecreaseQuantity(id: number) {}
+  async IncreaseQuantity(id: number): Promise<string> {
+    const response = await this.axios.patch<ApiResponse<string>>(
+      `carts/${id}/increment`,
+    );
+
+    return response.data.data;
+  }
+  async DecreaseQuantity(id: number) {
+    const response = await this.axios.patch<ApiResponse<string>>(
+      `carts/${id}/decrement`,
+    );
+
+    return response.data.data;
+  }
+
+  async DeleteCart(id: number) {
+    await this.axios.delete(`carts/${id}`);
+  }
 }

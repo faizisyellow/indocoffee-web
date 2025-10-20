@@ -74,14 +74,28 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
     },
   });
 
+  const deleteCartMutation = useMutation({
+    mutationFn: (cartId: number) => {
+      return cartService.DeleteCart(cartId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["carts"] });
+    },
+    onError: (error) => {
+      const errorMessage = prettyErrorServer(error);
+      alert.error(
+        errorMessage || "Failed to update quantity. Please try again.",
+      );
+    },
+  });
+
   const handleCheckout = () => {
-    console.log("Proceed to checkout");
     onClose();
     navigate("/checkout");
   };
 
   const handleRemoveItem = (itemId: number) => {
-    console.log("Remove item from cart:", itemId);
+    deleteCartMutation.mutate(itemId);
   };
 
   const handleIncrease = (cartId: number) => {
