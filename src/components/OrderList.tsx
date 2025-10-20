@@ -6,14 +6,18 @@ import {
   Card,
   CardContent,
   Grid,
-  Pagination,
   capitalize,
+  Alert,
+  Button,
+  CircularProgress,
 } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { ProfileService } from "../service/profile";
 import { clientWithAuth } from "../service/axios";
+import { prettyErrorServer } from "../utils/prettyErrorServer";
+import { ArrowDownUp } from "lucide-react";
 
 const STATUS_COLORS = {
   confirm: "#1976d2",
@@ -21,42 +25,94 @@ const STATUS_COLORS = {
   cancelled: "#d32f2f",
   shipped: "#0288d1",
   complete: "#2e7d32",
-};
+} as const;
+
+type OrderStatus = keyof typeof STATUS_COLORS | "";
+
+const limit = 8;
 
 export default function OrderList() {
-  const [filter, setFilter] = useState("current");
-  const [page, setPage] = useState(1);
+  const [filter, setFilter] = useState<OrderStatus>("");
+  const [sort, setSort] = useState<"asc" | "desc">("asc");
+  const [page, setPage] = useState<number>(1);
   const navigate = useNavigate();
 
   const userService = new ProfileService(clientWithAuth);
+  const offset = (page - 1) * limit;
 
-  const getOrders = useQuery({
-    queryKey: ["users_orders"],
-    queryFn: () => {
-      return userService.getUsersOrders();
-    },
+  const {
+    data: orders,
+    isError,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["users_orders", filter, sort, page, limit, offset],
+    queryFn: () =>
+      userService.getUsersOrders(
+        filter,
+        sort,
+        limit,
+        offset === 0 ? undefined : offset,
+      ),
   });
 
+  const errorServer = prettyErrorServer(error);
+
   const handleOrderClick = (orderId: string) => {
-    console.log("Navigate to order:", orderId);
     navigate(`/order/${orderId}`);
   };
 
-  const handlePageChange = (
-    event: React.ChangeEvent<unknown>,
-    value: number,
-  ) => {
-    setPage(value);
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const totalPages = 10;
+  const handleTabChange = (
+    _: React.SyntheticEvent,
+    newValue: OrderStatus,
+  ): void => {
+    setFilter(newValue);
+    setPage(1);
+  };
+
+  const handleTabClick = (status: OrderStatus): void => {
+    if (filter === status) {
+      setFilter("");
+      setPage(1);
+    }
+  };
+
+  const handleSortToggle = (): void => {
+    setSort((prev) => (prev === "asc" ? "desc" : "asc"));
+  };
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isError && errorServer) {
+    return (
+      <Box sx={{ p: 4 }}>
+        <Alert severity="error">{errorServer}</Alert>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ pl: 6 }}>
-      <Box sx={{ mb: 3 }}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="end"
+        sx={{ mb: 3 }}
+      >
         <Tabs
-          value={filter}
-          onChange={(e, v) => setFilter(v)}
+          value={filter || false}
+          onChange={handleTabChange}
           sx={{
             mt: 2,
             "& .MuiTab-root": {
@@ -73,96 +129,165 @@ export default function OrderList() {
             },
           }}
         >
-          <Tab value="current" label="Current" />
-          <Tab value="unpaid" label="Unpaid" />
-          <Tab value="all" label="All orders" />
+          {Object.keys(STATUS_COLORS).map((status) => (
+            <Tab
+              key={status}
+              value={status}
+              label={capitalize(String(status))}
+              onClick={() => handleTabClick(status as OrderStatus)}
+            />
+          ))}
         </Tabs>
-      </Box>
 
-      {getOrders?.data?.map((order) => (
-        <Card
-          onClick={() => handleOrderClick(order.id)}
-          key={order.id}
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={handleSortToggle}
           sx={{
-            mb: 3,
-            boxShadow: "none",
-            border: "1px solid #ddd",
-            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            textTransform: "none",
           }}
         >
-          <CardContent>
-            <Typography variant="subtitle1" fontWeight={600}>
-              Order #: {order.id}
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#555", mt: 1 }}>
-              Status:{" "}
-              <Box
-                component="span"
-                sx={{
-                  color:
-                    STATUS_COLORS[
-                      order.status?.toLowerCase() as keyof typeof STATUS_COLORS
-                    ] || "#555",
-                  fontWeight: 600,
-                }}
-              >
-                {capitalize(order.status)}
-              </Box>
-            </Typography>
-            <Typography variant="body2">
-              Date of order: {new Date(order.created_at).toLocaleString()}
-            </Typography>
-            <Typography variant="body2">
-              Delivered to:{" "}
-              {`${capitalize(order.street)}, ${capitalize(order.city)}`}
-            </Typography>
-            <Typography variant="body2" fontWeight={600} sx={{ mt: 1 }}>
-              Total: ${order.total_price.toFixed(2)}
-            </Typography>
+          <ArrowDownUp size={16} />
+          Sort: {sort.toUpperCase()}
+        </Button>
+      </Box>
 
-            <Grid container spacing={2} sx={{ mt: 2 }}>
-              {order.items.map((p) => (
-                <Grid size={{ xs: 12, sm: 6 }} key={p.id}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Box
-                      component="img"
-                      src={p.image}
-                      alt={p.bean_name}
-                      sx={{
-                        width: 60,
-                        height: 60,
-                        borderRadius: 1,
-                        objectFit: "cover",
-                        bgcolor: "#f9f9f9",
-                      }}
-                    />
-                    <Box>
-                      <Typography variant="body2" fontWeight={600}>
-                        {`${capitalize(p.bean_name)} | ${capitalize(p.roasted)}`}
-                      </Typography>
-                      <Typography variant="body2">
-                        Form: {capitalize(p.form_name)}
-                      </Typography>
-                      <Typography variant="body2">
-                        Quantity: {p.order_quantity}
-                      </Typography>
+      {!orders || orders.length === 0 ? (
+        <Box sx={{ p: 4 }}>
+          <Typography variant="body1" color="text.secondary">
+            No orders found.
+          </Typography>
+        </Box>
+      ) : (
+        orders.map((order) => (
+          <Card
+            onClick={() => handleOrderClick(order.id)}
+            key={order.id}
+            sx={{
+              mb: 3,
+              boxShadow: "none",
+              border: "1px solid #ddd",
+              cursor: "pointer",
+            }}
+          >
+            <CardContent>
+              <Typography variant="subtitle1" fontWeight={600}>
+                Order #: {order.id ?? "N/A"}
+              </Typography>
+
+              <Typography variant="body2" sx={{ color: "#555", mt: 1 }}>
+                Status:{" "}
+                <Box
+                  component="span"
+                  sx={{
+                    color:
+                      STATUS_COLORS[
+                        order.status?.toLowerCase() as keyof typeof STATUS_COLORS
+                      ] || "#555",
+                    fontWeight: 600,
+                  }}
+                >
+                  {capitalize(String(order?.status ?? ""))}
+                </Box>
+              </Typography>
+
+              <Typography variant="body2">
+                Date of order:{" "}
+                {order.created_at
+                  ? new Date(order.created_at).toLocaleString()
+                  : "N/A"}
+              </Typography>
+
+              <Typography variant="body2">
+                Delivered to:{" "}
+                {`${capitalize(String(order.street ?? ""))}, ${capitalize(
+                  String(order.city ?? ""),
+                )}`}
+              </Typography>
+
+              <Typography variant="body2" fontWeight={600} sx={{ mt: 1 }}>
+                Total: ${order?.total_price?.toFixed(2) ?? "0.00"}
+              </Typography>
+
+              <Grid container spacing={2} sx={{ mt: 2 }}>
+                {order.items?.map((p) => (
+                  <Grid size={{ xs: 12, sm: 6 }} key={p.id}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <Box
+                        component="img"
+                        src={p.image ?? ""}
+                        alt={p.bean_name ?? "Product"}
+                        sx={{
+                          width: 60,
+                          height: 60,
+                          borderRadius: 1,
+                          objectFit: "cover",
+                          bgcolor: "#f9f9f9",
+                        }}
+                      />
+                      <Box>
+                        <Typography variant="body2" fontWeight={600}>
+                          {`${capitalize(String(p.bean_name ?? ""))} | ${capitalize(
+                            String(p.roasted ?? ""),
+                          )}`}
+                        </Typography>
+                        <Typography variant="body2">
+                          Form: {capitalize(String(p.form_name ?? ""))}
+                        </Typography>
+                        <Typography variant="body2">
+                          Quantity: {p.order_quantity ?? 0}
+                        </Typography>
+                      </Box>
                     </Box>
-                  </Box>
-                </Grid>
-              ))}
-            </Grid>
-          </CardContent>
-        </Card>
-      ))}
+                  </Grid>
+                ))}
+              </Grid>
+            </CardContent>
+          </Card>
+        ))
+      )}
 
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3, mb: 4 }}>
-        <Pagination
-          count={totalPages}
-          page={page}
-          onChange={handlePageChange}
-          variant="outlined"
-          shape="rounded"
-        />
+      <Box
+        sx={{
+          display: "flex",
+          gap: 1,
+          alignItems: "center",
+          justifyContent: "space-between",
+          my: 4,
+        }}
+      >
+        <Typography variant="body2" color="text.secondary">
+          Page {page} • Showing {orders?.length ?? 0} items
+        </Typography>
+
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+          <Button
+            variant="outlined"
+            size="small"
+            disabled={page === 1}
+            onClick={() => handlePageChange(page - 1)}
+            sx={{ textTransform: "none", minWidth: 90 }}
+          >
+            Previous
+          </Button>
+
+          <Typography variant="body2" sx={{ px: 2, color: "text.secondary" }}>
+            Page {page}
+          </Typography>
+
+          <Button
+            variant="outlined"
+            size="small"
+            disabled={!orders || orders.length < limit}
+            onClick={() => handlePageChange(page + 1)}
+            sx={{ textTransform: "none", minWidth: 90 }}
+          >
+            Next
+          </Button>
+        </Box>
       </Box>
     </Box>
   );

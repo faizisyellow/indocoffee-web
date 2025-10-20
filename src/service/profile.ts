@@ -13,8 +13,23 @@ export class ProfileService {
     return data?.data;
   }
 
-  async getUsersOrders(): Promise<Orders> {
-    const { data } = await this.axios.get<ApiResponse<Orders>>("users/orders");
+  async getUsersOrders(
+    status?: "confirm" | "roasting" | "shipped" | "complete" | "cancelled" | "",
+    sort?: "asc" | "desc",
+    limit?: number,
+    offset?: number,
+  ): Promise<Orders> {
+    const params = new URLSearchParams();
+    if (status != undefined || status !== "")
+      params.append("status", String(status));
+    if (sort) params.append("sort", sort);
+    if (offset !== undefined) params.append("offset", offset.toString());
+    if (limit !== undefined) params.append("limit", limit.toString());
+
+    const queryString = params.toString();
+    const url = queryString ? `users/orders?${queryString}` : "users/orders";
+
+    const { data } = await this.axios.get<ApiResponse<Orders>>(url);
     return data?.data;
   }
 }
