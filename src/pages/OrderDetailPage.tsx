@@ -10,26 +10,13 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  capitalize,
 } from "@mui/material";
 import { useParams } from "react-router";
 import { useNavigate } from "react-router";
-
-const mockOrderItems = [
-  {
-    id: 1,
-    name: "ARABICA",
-    price: 150,
-    details: "WHOLE COFFEE BEANS | SIZE | 200G | ROAST | LIGHT",
-    quantity: 2,
-  },
-  {
-    id: 2,
-    name: "ARABICA",
-    price: 150,
-    details: "WHOLE COFFEE BEANS | SIZE | 200G | ROAST | LIGHT",
-    quantity: 1,
-  },
-];
+import { useQuery } from "@tanstack/react-query";
+import { OrdersService } from "../service/orders";
+import { clientWithAuth } from "../service/axios";
 
 const mockOrder = {
   id: "2135153sads",
@@ -47,6 +34,15 @@ export default function OrderDetailPage() {
   const [status, setStatus] = useState(mockOrder.status);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const navigate = useNavigate();
+
+  const orderService = new OrdersService(clientWithAuth);
+
+  const getOrderDetail = useQuery({
+    queryKey: ["order", id],
+    queryFn: () => {
+      return orderService.GetOrderDetail(id!);
+    },
+  });
 
   const handleCancel = () => {
     console.log("Cancel order:", id);
@@ -90,8 +86,8 @@ export default function OrderDetailPage() {
         }}
       >
         <Box sx={{ flex: 1 }}>
-          {mockOrderItems.map((item, index) => (
-            <Box key={index}>
+          {getOrderDetail.data?.items.map((item) => (
+            <Box key={item.id}>
               <Box
                 sx={{
                   display: "flex",
@@ -117,22 +113,22 @@ export default function OrderDetailPage() {
                 </Box>
                 <Box sx={{ flexGrow: 1 }}>
                   <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-                    {item.name}
+                    {item.bean_name.toUpperCase()}
                   </Typography>
                   <Typography
                     variant="h6"
                     sx={{ fontWeight: 700, mb: 2, color: "primary.main" }}
                   >
-                    ${item.price}
+                    ${item.price.toFixed(2)}
                   </Typography>
                   <Typography
                     variant="body2"
                     sx={{ color: "text.secondary", mb: 1 }}
                   >
-                    {item.details}
+                    {`${item.form_name.toUpperCase()} | ${item.roasted.toUpperCase()}`}
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 600, mt: 2 }}>
-                    {item.quantity}x
+                    {item.order_quantity}x
                   </Typography>
                 </Box>
               </Box>
@@ -161,7 +157,23 @@ export default function OrderDetailPage() {
             >
               <Typography variant="body1">ID</Typography>
               <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                {mockOrder.id}
+                {getOrderDetail?.data?.id}
+              </Typography>
+            </Box>
+            <Divider sx={{ my: 2 }} />
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                mb: 2,
+              }}
+            >
+              <Typography variant="body1">Order at</Typography>
+              <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                {getOrderDetail?.data?.created_at
+                  ? new Date(getOrderDetail?.data?.created_at).toLocaleString()
+                  : "N/A"}
               </Typography>
             </Box>
             <Divider sx={{ my: 2 }} />
@@ -175,7 +187,7 @@ export default function OrderDetailPage() {
             >
               <Typography variant="body1">Email</Typography>
               <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                {mockOrder.email}
+                {getOrderDetail.data?.customer_email}
               </Typography>
             </Box>
             <Divider sx={{ my: 2 }} />
@@ -189,7 +201,7 @@ export default function OrderDetailPage() {
             >
               <Typography variant="body1">Name</Typography>
               <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                {mockOrder.name}
+                {capitalize(String(getOrderDetail.data?.customer_name ?? ""))}
               </Typography>
             </Box>
             <Divider sx={{ my: 2 }} />
@@ -206,9 +218,9 @@ export default function OrderDetailPage() {
                 variant="body1"
                 sx={{ fontWeight: 600, textAlign: "right" }}
               >
-                {mockOrder.address.split("\n").map((line, i) => (
-                  <Box key={i}>{line}</Box>
-                ))}
+                {`${capitalize(String(getOrderDetail?.data?.street ?? ""))}, ${capitalize(
+                  String(getOrderDetail.data?.city ?? ""),
+                )}`}
               </Typography>
             </Box>
             <Divider sx={{ my: 2 }} />
@@ -222,7 +234,7 @@ export default function OrderDetailPage() {
             >
               <Typography variant="body1">Status</Typography>
               <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                {status}
+                {capitalize(String(getOrderDetail.data?.status ?? ""))}
               </Typography>
             </Box>
             <Divider sx={{ my: 2 }} />
@@ -238,29 +250,8 @@ export default function OrderDetailPage() {
                 Total
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: 700 }}>
-                ${mockOrder.total}
+                ${getOrderDetail.data?.total_price}
               </Typography>
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                mb: 1,
-                pl: 2,
-              }}
-            >
-              <Typography variant="body2">Sub total</Typography>
-              <Typography variant="body2">${mockOrder.subtotal}</Typography>
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                pl: 2,
-              }}
-            >
-              <Typography variant="body2">Shipping</Typography>
-              <Typography variant="body2">${mockOrder.shipping}</Typography>
             </Box>
           </Box>
 

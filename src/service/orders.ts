@@ -1,5 +1,5 @@
 import type { AxiosInstance } from "axios";
-import type { Orders } from "./store_type";
+import type { Order } from "./store_type";
 import type { ApiResponse } from "./axios/type";
 
 export class OrdersService {
@@ -8,8 +8,8 @@ export class OrdersService {
     this.axios = axios;
   }
 
-  async GetAllOrders(): Promise<Orders> {
-    const response = await this.axios.get<ApiResponse<Orders>>("orders");
+  async GetOrderDetail(id: string): Promise<Order> {
+    const response = await this.axios.get<ApiResponse<Order>>(`orders/${id}`);
     return response.data.data;
   }
 }
