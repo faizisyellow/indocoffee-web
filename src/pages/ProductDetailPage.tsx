@@ -6,27 +6,58 @@ import {
   IconButton,
   Divider,
   capitalize,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import { ChevronLeft, Droplet, Bean, Coffee } from "lucide-react";
 import { useNavigate } from "react-router";
 import { AuthenticationService } from "../service/authentication";
-import { client } from "../service/axios";
+import { client, clientWithAuth } from "../service/axios";
 import { useAlert } from "../hooks/useAlert";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { InventoryService } from "../service/inventory";
 import { useParams } from "react-router";
+import { CartsService } from "../service/carts";
+import { prettyErrorServer } from "../utils/prettyErrorServer";
 
 export default function ProductDetailPage() {
   const navigate = useNavigate();
   const authService = new AuthenticationService(client);
   const getProductService = new InventoryService(client);
+  const cartService = new CartsService(clientWithAuth);
   const alert = useAlert();
+  const queryClient = useQueryClient();
   const { id } = useParams();
 
-  const product = useQuery({
+  const {
+    data: product,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["products", id],
     queryFn: () => {
       return getProductService.GetProduct(Number(id!));
+    },
+  });
+
+  const errorServer = prettyErrorServer(error);
+
+  const addCartMutation = useMutation({
+    mutationFn: () => {
+      return cartService.AddCart(Number(id!));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["carts"] });
+      alert.success("Product added to cart successfully");
+    },
+    onError: (error) => {
+      const errorMessage = prettyErrorServer(error, {
+        409: "This product is already in your cart. You can adjust the quantity there.",
+      });
+      alert.error(
+        errorMessage || "Failed to add product to cart. Please try again.",
+      );
     },
   });
 
@@ -39,8 +70,34 @@ export default function ProductDetailPage() {
       navigate("/login");
       return;
     }
-    alert.success("Success add product");
+    addCartMutation.mutate();
   };
+
+  if (isLoading) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
+
+  if (isError && errorServer) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Alert severity="error">{errorServer}</Alert>
+      </Container>
+    );
+  }
+
+  if (!product) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Alert severity="warning">Product not found.</Alert>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg" sx={{ py: 1 }}>
@@ -54,35 +111,30 @@ export default function ProductDetailPage() {
         sx={{
           display: "flex",
           flexDirection: { xs: "column", md: "row" },
-          gap: 4,
+          gap: 6,
         }}
       >
         <Box
+          component="img"
+          src={product.image ?? ""}
+          alt={product.bean?.name ?? "Product"}
           sx={{
-            flex: "0 0 auto",
-            width: { xs: "100%", md: 400 },
+            width: { xs: "100%", md: 450 },
             height: 500,
-            bgcolor: "#333",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#fff",
-            fontSize: "1rem",
-            fontWeight: 600,
+            objectPosition: "center -80px",
+            objectFit: "cover",
           }}
-        >
-          INDOCOFFEE
-        </Box>
+        />
 
         <Box sx={{ flex: 1 }}>
           <Typography variant="h3" sx={{ fontWeight: 700, mb: 2 }}>
-            {capitalize(String(product.data?.bean.name ?? ""))}
+            {capitalize(String(product.bean?.name ?? ""))}
           </Typography>
           <Typography
             variant="h4"
             sx={{ fontWeight: 700, mb: 3, color: "primary.main" }}
           >
-            ${product.data?.price}
+            ${product.price?.toFixed(2) ?? "0.00"}
           </Typography>
 
           <Divider sx={{ mb: 3 }} />
@@ -90,14 +142,35 @@ export default function ProductDetailPage() {
           <Box sx={{ mb: 3 }}>
             <Typography variant="body1" sx={{ mb: 1 }}>
               <strong>Type:</strong>{" "}
-              {capitalize(String(product.data?.form.name ?? ""))}
+              {capitalize(String(product.form?.name ?? ""))}
             </Typography>
             <Typography variant="body1" sx={{ mb: 1 }}>
               <strong>Roast:</strong>{" "}
-              {capitalize(String(product.data?.roasted ?? ""))}
+              {capitalize(String(product.roasted ?? ""))}
             </Typography>
-            <Typography variant="body1" sx={{ mb: 1 }}>
-              <strong>Available:</strong> {product.data?.quantity}
+            <Typography
+              variant="body1"
+              sx={{ mb: 1, display: "flex", alignItems: "center", gap: 1 }}
+            >
+              <strong>Available:</strong>
+              {(product.quantity ?? 0) === 0 ? (
+                <Box
+                  component="span"
+                  sx={{
+                    bgcolor: "#d32f2f",
+                    color: "#fff",
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: 1,
+                    fontSize: "0.875rem",
+                    fontWeight: 600,
+                  }}
+                >
+                  SOLD OUT
+                </Box>
+              ) : (
+                (product.quantity ?? 0)
+              )}
             </Typography>
           </Box>
 
@@ -201,15 +274,22 @@ export default function ProductDetailPage() {
           <Button
             fullWidth
             variant="contained"
-            size="large"
+            size="small"
             onClick={handleAddToCart}
+            disabled={
+              addCartMutation.isPending || (product.quantity ?? 0) === 0
+            }
             sx={{
-              py: 1.5,
+              py: 1,
               fontSize: "1rem",
               fontWeight: 700,
             }}
           >
-            ADD TO CART
+            {addCartMutation.isPending
+              ? "ADDING..."
+              : (product.quantity ?? 0) === 0
+                ? "OUT OF STOCK"
+                : "ADD TO CART"}
           </Button>
         </Box>
       </Box>
