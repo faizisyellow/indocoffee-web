@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { ShoppingCart, LogOut, User } from "lucide-react";
 import CartDrawer from "./CartDrawer";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { AuthenticationService } from "../service/authentication";
 import { clientWithAuth } from "../service/axios";
 import { useQuery } from "@tanstack/react-query";
@@ -22,6 +22,7 @@ import { ProfileService } from "../service/profile";
 
 export default function Header() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [cartOpen, setCartOpen] = useState(false);
   const [profileMenuAnchor, setProfileMenuAnchor] =
     useState<null | HTMLElement>(null);
@@ -67,6 +68,8 @@ export default function Header() {
     authService.logout();
     handleProfileMenuClose();
   };
+
+  const isCheckoutPage = location.pathname.includes("checkout");
 
   return (
     <>
@@ -118,19 +121,21 @@ export default function Header() {
               </Box>
             ) : (
               <>
-                <IconButton
-                  onClick={handleCartClick}
-                  sx={{
-                    bgcolor: "#fff",
-                    "&:hover": { bgcolor: "#f5f5f5" },
-                    width: 48,
-                    height: 48,
-                  }}
-                >
-                  <Badge badgeContent={cartCount} color="primary">
-                    <ShoppingCart size={24} color="#000" />
-                  </Badge>
-                </IconButton>
+                {!isCheckoutPage && (
+                  <IconButton
+                    onClick={handleCartClick}
+                    sx={{
+                      bgcolor: "#fff",
+                      "&:hover": { bgcolor: "#f5f5f5" },
+                      width: 48,
+                      height: 48,
+                    }}
+                  >
+                    <Badge badgeContent={cartCount} color="primary">
+                      <ShoppingCart size={24} color="#000" />
+                    </Badge>
+                  </IconButton>
+                )}
 
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Avatar
@@ -171,7 +176,6 @@ export default function Header() {
                       },
                     }}
                   >
-                    {/* User Info */}
                     <MenuItem
                       sx={{ flexDirection: "column", alignItems: "flex-start" }}
                     >
@@ -214,7 +218,9 @@ export default function Header() {
         </Toolbar>
       </AppBar>
 
-      <CartDrawer open={cartOpen} onClose={handleCartClose} />
+      {!isCheckoutPage && (
+        <CartDrawer open={cartOpen} onClose={handleCartClose} />
+      )}
     </>
   );
 }

@@ -254,7 +254,7 @@ export default function HomePage() {
                       variant="h6"
                       sx={{ fontWeight: 700, mb: 1, color: "primary.main" }}
                     >
-                      ${product.price}
+                      ${product.price.toFixed(2)}
                     </Typography>
                     <Typography
                       variant="body2"
