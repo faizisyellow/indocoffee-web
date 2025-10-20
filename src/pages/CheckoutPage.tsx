@@ -17,6 +17,7 @@ import {
   CircularProgress,
   Alert,
   IconButton,
+  capitalize,
 } from "@mui/material";
 import { Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router";
@@ -40,12 +41,43 @@ type AddressFormValues = {
 };
 
 const addressSchema = yup.object({
-  name: yup.string().required("Name is required"),
-  email: yup.string().email("Invalid email").required("Email is required"),
-  phoneNumber: yup.string().required("Phone number is required"),
-  alternativeNumber: yup.string().nullable(),
-  street: yup.string().required("Street is required"),
-  city: yup.string().required("City is required"),
+  name: yup
+    .string()
+    .required("Name is required")
+    .max(100, "Name too long")
+    .matches(/^[a-zA-Z\s.'-]+$/, "Invalid characters in name"),
+
+  email: yup
+    .string()
+    .email("Invalid email")
+    .max(100, "Email too long")
+    .required("Email is required"),
+
+  phoneNumber: yup
+    .string()
+    .required("Phone number is required")
+    .matches(/^[0-9+\-\s]{6,20}$/, "Invalid phone number format"),
+
+  alternativeNumber: yup
+    .string()
+    .nullable()
+    .matches(/^[0-9+\-\s]*$/, "Invalid phone number format"),
+
+  street: yup
+    .string()
+    .required("Street is required")
+    .max(150, "Street too long")
+    .test("no-script", "Invalid input", (value) =>
+      value
+        ? !/<script|<\/script|onerror|onload|javascript:/i.test(value)
+        : true,
+    ),
+
+  city: yup
+    .string()
+    .required("City is required")
+    .max(100, "City too long")
+    .matches(/^[a-zA-Z\s.'-]+$/, "Invalid city name"),
 });
 
 const cartService = new CartsService(clientWithAuth);
@@ -62,6 +94,7 @@ export default function CheckoutPage() {
     cartIds: number[];
   } | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const {
     data: userCarts,
@@ -80,28 +113,22 @@ export default function CheckoutPage() {
   const increaseMutation = useMutation({
     mutationFn: (cartId: number) => cartService.IncreaseQuantity(cartId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["carts"] }),
-    onError: (err) => {
-      const msg = prettyErrorServer(err);
-      alert.error(msg || "Failed to increase quantity");
-    },
+    onError: (err) =>
+      alert.error(prettyErrorServer(err) || "Failed to increase quantity"),
   });
 
   const decreaseMutation = useMutation({
     mutationFn: (cartId: number) => cartService.DecreaseQuantity(cartId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["carts"] }),
-    onError: (err) => {
-      const msg = prettyErrorServer(err);
-      alert.error(msg || "Failed to decrease quantity");
-    },
+    onError: (err) =>
+      alert.error(prettyErrorServer(err) || "Failed to decrease quantity"),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (cartId: number) => cartService.DeleteCart(cartId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["carts"] }),
-    onError: (err) => {
-      const msg = prettyErrorServer(err);
-      alert.error(msg || "Failed to remove item");
-    },
+    onError: (err) =>
+      alert.error(prettyErrorServer(err) || "Failed to remove item"),
   });
 
   const createOrderMutation = useMutation({
@@ -114,18 +141,20 @@ export default function CheckoutPage() {
       phone_number: string;
       street: string;
     }) => {
+      const key = uuidv4();
       return ordersService.CreateOrder(payload, {
-        X_Idempotency_Key: uuidv4(),
+        X_Idempotency_Key: key,
       });
     },
+    retry: false,
     onSuccess: () => {
       alert.success("Order placed successfully!");
       queryClient.invalidateQueries({ queryKey: ["carts"] });
-      navigate("account");
+      navigate("/account");
     },
     onError: (err) => {
-      const msg = prettyErrorServer(err);
-      alert.error(msg || "Failed to place order");
+      alert.error(prettyErrorServer(err) || "Failed to place order");
+      setConfirmOpen(false);
     },
   });
 
@@ -141,6 +170,7 @@ export default function CheckoutPage() {
     onSubmit: async ({ value }) => {
       try {
         await addressSchema.validate(value, { abortEarly: false });
+        setFormErrors({});
 
         const cartIds: number[] = userCarts?.carts?.map((c) => c.id) ?? [];
 
@@ -153,7 +183,11 @@ export default function CheckoutPage() {
         setActiveStep(2);
       } catch (err) {
         if (err instanceof yup.ValidationError) {
-          alert.error(err.errors[0] ?? "Invalid input");
+          const errors: Record<string, string> = {};
+          err.inner.forEach((e) => {
+            if (e.path) errors[e.path] = e.message;
+          });
+          setFormErrors(errors);
         } else {
           alert.error("Failed to validate address");
         }
@@ -177,7 +211,7 @@ export default function CheckoutPage() {
   const handlePlaceOrder = () => {
     if (!reviewData) return;
 
-    const payload = {
+    createOrderMutation.mutate({
       cart_ids: reviewData.cartIds,
       customer_name: reviewData.address.name,
       customer_email: reviewData.address.email,
@@ -186,9 +220,7 @@ export default function CheckoutPage() {
         reviewData.address.alternativeNumber || undefined,
       city: reviewData.address.city,
       street: reviewData.address.street,
-    };
-
-    createOrderMutation.mutate(payload);
+    });
   };
 
   return (
@@ -222,7 +254,7 @@ export default function CheckoutPage() {
                         src={item.product.image}
                         alt={item.product.bean.name}
                         sx={{
-                          width: 120,
+                          width: 210,
                           height: 150,
                           objectFit: "cover",
                           borderRadius: 1,
@@ -234,19 +266,20 @@ export default function CheckoutPage() {
                           variant="h5"
                           sx={{ fontWeight: 700, mb: 1 }}
                         >
-                          {item.product.bean.name}
+                          {capitalize(String(item.product.bean.name ?? ""))}
                         </Typography>
                         <Typography
                           variant="h6"
                           sx={{ fontWeight: 700, mb: 2, color: "primary.main" }}
                         >
-                          ${item.product.price}
+                          ${item.product.price.toFixed(2)}
                         </Typography>
                         <Typography
                           variant="body2"
                           sx={{ color: "text.secondary" }}
                         >
-                          {item.product.form.name} | {item.product.roasted}
+                          {capitalize(item.product.form.name ?? "")} |{" "}
+                          {capitalize(item.product.roasted ?? "")}
                         </Typography>
 
                         <Box
@@ -361,7 +394,8 @@ export default function CheckoutPage() {
                           value={f.state.value as string}
                           onChange={(e) => f.handleChange(e.target.value)}
                           onBlur={f.handleBlur}
-                          sx={{ bgcolor: "#fff" }}
+                          error={!!formErrors[fieldName]}
+                          helperText={formErrors[fieldName] || ""}
                         />
                       </Box>
                     )}
@@ -399,25 +433,25 @@ export default function CheckoutPage() {
                       width: 120,
                       height: 150,
                       objectFit: "cover",
-                      borderRadius: 1,
                       bgcolor: "#f9f9f9",
                     }}
                   />
                   <Box sx={{ flexGrow: 1 }}>
                     <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-                      {item.product.bean.name}
+                      {capitalize(String(item.product.bean.name ?? ""))}
                     </Typography>
                     <Typography
                       variant="h6"
                       sx={{ fontWeight: 700, mb: 2, color: "primary.main" }}
                     >
-                      ${item.product.price}
+                      ${item.product.price.toFixed(2)}
                     </Typography>
                     <Typography
                       variant="body2"
                       sx={{ color: "text.secondary" }}
                     >
-                      {item.product.form.name} | {item.product.roasted}
+                      {capitalize(item.product.form.name ?? "")} |{" "}
+                      {capitalize(item.product.roasted ?? "")}
                     </Typography>
                     <Typography variant="body2" sx={{ mt: 1 }}>
                       {item.quantity}x
@@ -430,7 +464,14 @@ export default function CheckoutPage() {
           </Grid>
 
           <Grid size={{ xs: 12, md: 4 }}>
-            <Paper sx={{ p: 3, bgcolor: "#f5f5f5", borderRadius: 2 }}>
+            <Paper
+              sx={{
+                p: 3,
+                bgcolor: "#f5f5f5",
+                borderRadius: 0,
+                boxShadow: "none",
+              }}
+            >
               <Typography variant="body2" sx={{ mb: 0.5 }}>
                 <b>Email:</b> {reviewData.address.email}
               </Typography>
