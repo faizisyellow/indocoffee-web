@@ -12,4 +12,18 @@ export class OrdersService {
     const response = await this.axios.get<ApiResponse<Order>>(`orders/${id}`);
     return response.data.data;
   }
+
+  async CompleteOrder(id: string): Promise<string> {
+    const response = await this.axios.patch<ApiResponse<string>>(
+      `orders/${id}/complete`,
+    );
+    return response.data.data;
+  }
+
+  async CancelOrder(id: string): Promise<string> {
+    const response = await this.axios.patch<ApiResponse<string>>(
+      `orders/${id}/cancel`,
+    );
+    return response.data.data;
+  }
 }

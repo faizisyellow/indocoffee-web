@@ -33,7 +33,7 @@ const limit = 8;
 
 export default function OrderList() {
   const [filter, setFilter] = useState<OrderStatus>("");
-  const [sort, setSort] = useState<"asc" | "desc">("asc");
+  const [sort, setSort] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState<number>(1);
   const navigate = useNavigate();
 
@@ -151,7 +151,7 @@ export default function OrderList() {
           }}
         >
           <ArrowDownUp size={16} />
-          Sort: {sort.toUpperCase()}
+          Sort: {sort === "asc" ? "Older" : "Newest"}
         </Button>
       </Box>
 
