@@ -4,36 +4,33 @@ import {
   Typography,
   Button,
   IconButton,
-  Paper,
   Divider,
+  capitalize,
 } from "@mui/material";
-import { ChevronLeft, Plus, Minus, Droplet, Bean, Coffee } from "lucide-react";
-import { useState } from "react";
+import { ChevronLeft, Droplet, Bean, Coffee } from "lucide-react";
 import { useNavigate } from "react-router";
 import { AuthenticationService } from "../service/authentication";
 import { client } from "../service/axios";
 import { useAlert } from "../hooks/useAlert";
-
-const mockProduct = {
-  id: 1,
-  name: "ARABICA",
-  price: 150,
-  image: "/coffee-arabica.jpg",
-  type: "WHOLE COFFEE BEANS",
-  size: "200G",
-  roast: "LIGHT",
-  description:
-    "Premium Arabica coffee beans sourced from the finest Indonesian plantations. Known for its smooth, mild flavor with subtle notes of chocolate and fruit.",
-};
+import { useQuery } from "@tanstack/react-query";
+import { InventoryService } from "../service/inventory";
+import { useParams } from "react-router";
 
 export default function ProductDetailPage() {
   const navigate = useNavigate();
-  const [quantity, setQuantity] = useState(1);
   const authService = new AuthenticationService(client);
+  const getProductService = new InventoryService(client);
   const alert = useAlert();
+  const { id } = useParams();
+
+  const product = useQuery({
+    queryKey: ["products", id],
+    queryFn: () => {
+      return getProductService.GetProduct(Number(id!));
+    },
+  });
 
   const handleBack = () => {
-    console.log("Navigate back to home");
     navigate("/");
   };
 
@@ -45,20 +42,8 @@ export default function ProductDetailPage() {
     alert.success("Success add product");
   };
 
-  const handleIncrement = () => {
-    console.log("Increment quantity");
-    setQuantity((prev) => prev + 1);
-  };
-
-  const handleDecrement = () => {
-    console.log("Decrement quantity");
-    if (quantity > 1) {
-      setQuantity((prev) => prev - 1);
-    }
-  };
-
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 1 }}>
       <Box sx={{ mb: 3 }}>
         <IconButton onClick={handleBack} sx={{ mb: 2 }}>
           <ChevronLeft size={24} />
@@ -91,65 +76,29 @@ export default function ProductDetailPage() {
 
         <Box sx={{ flex: 1 }}>
           <Typography variant="h3" sx={{ fontWeight: 700, mb: 2 }}>
-            {mockProduct.name}
+            {capitalize(String(product.data?.bean.name ?? ""))}
           </Typography>
           <Typography
             variant="h4"
             sx={{ fontWeight: 700, mb: 3, color: "primary.main" }}
           >
-            ${mockProduct.price}
+            ${product.data?.price}
           </Typography>
 
           <Divider sx={{ mb: 3 }} />
 
           <Box sx={{ mb: 3 }}>
             <Typography variant="body1" sx={{ mb: 1 }}>
-              <strong>Type:</strong> {mockProduct.type}
+              <strong>Type:</strong>{" "}
+              {capitalize(String(product.data?.form.name ?? ""))}
             </Typography>
             <Typography variant="body1" sx={{ mb: 1 }}>
-              <strong>Size:</strong> {mockProduct.size}
+              <strong>Roast:</strong>{" "}
+              {capitalize(String(product.data?.roasted ?? ""))}
             </Typography>
             <Typography variant="body1" sx={{ mb: 1 }}>
-              <strong>Roast:</strong> {mockProduct.roast}
+              <strong>Available:</strong> {product.data?.quantity}
             </Typography>
-          </Box>
-
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              mb: 3,
-            }}
-          >
-            <Typography variant="body1" sx={{ fontWeight: 600 }}>
-              Quantity:
-            </Typography>
-            <Paper
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                border: "1px solid #ccc",
-              }}
-              elevation={0}
-            >
-              <IconButton onClick={handleDecrement} disabled={quantity <= 1}>
-                <Minus size={18} />
-              </IconButton>
-              <Typography
-                sx={{
-                  px: 3,
-                  fontWeight: 600,
-                  minWidth: 40,
-                  textAlign: "center",
-                }}
-              >
-                {quantity}
-              </Typography>
-              <IconButton onClick={handleIncrement}>
-                <Plus size={18} />
-              </IconButton>
-            </Paper>
           </Box>
 
           <Divider sx={{ mb: 3 }} />
@@ -247,22 +196,6 @@ export default function ProductDetailPage() {
                 </Typography>
               </Box>
             </Box>
-          </Box>
-
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              mb: 3,
-            }}
-          >
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              Total:
-            </Typography>
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              ${mockProduct.price * quantity}
-            </Typography>
           </Box>
 
           <Button
