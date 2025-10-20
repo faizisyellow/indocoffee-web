@@ -8,6 +8,33 @@ export class OrdersService {
     this.axios = axios;
   }
 
+  async CreateOrder(
+    payload: {
+      alternative_phone_number?: string;
+      cart_ids: number[];
+      city: string;
+      customer_email: string;
+      customer_name: string;
+      phone_number: string;
+      street: string;
+    },
+    header: {
+      X_Idempotency_Key: string;
+    },
+  ): Promise<string> {
+    const response = await this.axios.post<ApiResponse<string>>(
+      "orders",
+      payload,
+      {
+        headers: {
+          "X-Idempotency-Key": header.X_Idempotency_Key,
+        },
+      },
+    );
+
+    return response.data.data;
+  }
+
   async GetOrderDetail(id: string): Promise<Order> {
     const response = await this.axios.get<ApiResponse<Order>>(`orders/${id}`);
     return response.data.data;
