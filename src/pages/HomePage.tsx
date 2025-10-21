@@ -135,8 +135,8 @@ export default function HomePage() {
               onChange={(e) => handleSortChange(e.target.value)}
               variant="outlined"
             >
-              <MenuItem value="asc">Name (A-Z)</MenuItem>
-              <MenuItem value="desc">Name (Z-A)</MenuItem>
+              <MenuItem value="asc">Price (Low)</MenuItem>
+              <MenuItem value="desc">Price (High)</MenuItem>
             </Select>
           </FormControl>
         </Box>

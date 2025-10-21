@@ -147,10 +147,10 @@ export default function CheckoutPage() {
       });
     },
     retry: false,
-    onSuccess: () => {
+    onSuccess: (response) => {
       alert.success("Order placed successfully!");
       queryClient.invalidateQueries({ queryKey: ["carts"] });
-      navigate("/account");
+      navigate(`/order/${response.id}`);
     },
     onError: (err) => {
       alert.error(prettyErrorServer(err) || "Failed to place order");

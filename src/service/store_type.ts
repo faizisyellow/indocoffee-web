@@ -76,6 +76,10 @@ export type Order = {
 
 export type Orders = Order[];
 
+export type OrderCreate = {
+  id: string;
+};
+
 export type UsersCarts = {
   id: number;
   username: string;

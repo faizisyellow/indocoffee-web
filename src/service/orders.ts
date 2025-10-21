@@ -1,5 +1,5 @@
 import type { AxiosInstance } from "axios";
-import type { Order } from "./store_type";
+import type { Order, OrderCreate } from "./store_type";
 import type { ApiResponse } from "./axios/type";
 
 export class OrdersService {
@@ -21,8 +21,8 @@ export class OrdersService {
     header: {
       X_Idempotency_Key: string;
     },
-  ): Promise<string> {
-    const response = await this.axios.post<ApiResponse<string>>(
+  ): Promise<OrderCreate> {
+    const response = await this.axios.post<ApiResponse<OrderCreate>>(
       "orders",
       payload,
       {
