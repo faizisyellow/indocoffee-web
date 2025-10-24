@@ -67,7 +67,9 @@ export default function LoginPage() {
   });
 
   const errorServer = prettyErrorServer(loginMutation.error, {
+    400: "Your email or password is incorrect",
     404: "You don't have an account. Please register first",
+    429: "Too many login attempts — Your account is temporarily locked. Try again in 12 hours or reset your password.",
   });
 
   return (

@@ -41,7 +41,9 @@ export default function ProductDetailPage() {
     },
   });
 
-  const errorServer = prettyErrorServer(error);
+  const errorServer = prettyErrorServer(error, {
+    429: " Too many requests — you’ve reached the rate limit. Please wait a few moments before trying again.",
+  });
 
   const addCartMutation = useMutation({
     mutationFn: () => {

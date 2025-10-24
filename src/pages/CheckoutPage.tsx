@@ -108,7 +108,9 @@ export default function CheckoutPage() {
     },
   });
 
-  const cartsErrorMessage = prettyErrorServer(cartsErrorObj);
+  const cartsErrorMessage = prettyErrorServer(cartsErrorObj, {
+    429: " Too many requests — you’ve reached the rate limit. Please wait a few moments before trying again.",
+  });
 
   const increaseMutation = useMutation({
     mutationFn: (cartId: number) => cartService.IncreaseQuantity(cartId),
